@@ -45,6 +45,7 @@ dependencies:
   readmore: ^2.1.0
   firebase_auth: ^3.1.5
   flutter_login: ^2.2.1
+  flash: ^2.0.3
 
 dev_dependencies:
   flutter_test:

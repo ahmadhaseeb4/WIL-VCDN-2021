@@ -2,9 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:octo_image/octo_image.dart';
+import 'package:pwot/models/commentModel.dart';
 import 'package:pwot/models/postModel.dart';
+import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
+import 'package:pwot/widgets/comment.dart';
 import 'package:readmore/readmore.dart';
+import 'package:flash/flash.dart';
+
 
 class Post extends StatefulWidget {
   const Post({Key? key, required this.post}) : super(key: key);
@@ -156,6 +161,51 @@ class _PostState extends State<Post> {
                   ),
                 ),
               ),
+              onTap: () async {
+                List<CommentModel> comments = await PostServices.retrievePostComments(widget.post.comments);
+                context.showFlashDialog(
+                  margin: EdgeInsets.symmetric(horizontal: width * 0.2,),
+                  backgroundColor: AppColor.bgColor,
+                    persistent: true,
+                    title: const Text('Comments'),
+                    content: Comment(comments: comments,),
+                    negativeActionBuilder: (context, controller, _) {
+                      return Container(
+                        decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.all( Radius.circular(5.0)),
+                            color: AppColor.bgSideMenu
+                        ),
+                        child: MaterialButton(
+                          highlightColor: Colors.transparent,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: height * 0.01, horizontal: width * 0.03),
+                            child: const Text('Comment', style: TextStyle(color: Colors.white)),
+                          ),
+                          onPressed: () async {
+
+                          },
+                        ),
+                      );
+                    },
+                    positiveActionBuilder: (context, controller, _) {
+                      return Container(
+                        decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.all( Radius.circular(5.0)),
+                            color: Colors.red.shade800
+                        ),
+                        child: MaterialButton(
+                          highlightColor: Colors.transparent,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: height * 0.01, horizontal: width * 0.03),
+                            child: const Text('Cancel', style: TextStyle(color: Colors.white),),
+                          ),
+                          onPressed: () async {
+                            controller.dismiss();
+                          },
+                        ),
+                      );
+                    });
+              },
             ),
         ),
       ],
@@ -198,4 +248,18 @@ class _PostState extends State<Post> {
       ),
     );
   }
+
+  // Future<void> addComment() async {
+  //   CommentModel comment = CommentModel(
+  //       commentDate: DateTime.now().toIso8601String(),
+  //       commentNo: 1,
+  //       text: text,
+  //       userID: FirebaseAuth.instance.currentUser!.uid,
+  //       username: username
+  //   )
+  //   CollectionReference comments = FirebaseFirestore.instance.collection('comments');
+  //   comments.add().then((value) {
+  //     print("Comment Added!");
+  //   });
+  // }
 }
