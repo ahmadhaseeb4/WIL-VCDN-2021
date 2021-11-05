@@ -1,11 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pwot/dashboard.dart';
-import 'package:pwot/feed.dart';
+import 'package:pwot/pages/auth/pages/auth.dart';
+import 'package:pwot/pages/dashboard.dart';
+import 'package:pwot/pages/feed.dart';
 import 'package:pwot/utility/app_colors.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -81,27 +87,24 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             footer: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Muhammad Mubeen Hamid',
-                style: TextStyle(fontSize: 15),
-              ),
+              child: Text('${FirebaseAuth.instance.currentUser?.email}', style: TextStyle(color: AppColor.yellow)),
             ),
             items: [
               SideMenuItem(
                 priority: 0,
-                title: 'Dashboard',
+                title: 'Feed Page',
                 onTap: () {
                   page.jumpToPage(0);
                 },
-                icon: Icons.home,
+                icon: Icons.supervisor_account,
               ),
               SideMenuItem(
                 priority: 1,
-                title: 'Feed Page',
+                title: 'Dashboard',
                 onTap: () {
                   page.jumpToPage(1);
                 },
-                icon: Icons.supervisor_account,
+                icon: Icons.home,
               ),
               SideMenuItem(
                 priority: 2,
@@ -111,72 +114,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 icon: Icons.file_copy_rounded,
               ),
+              FirebaseAuth.instance.currentUser == null ?
               SideMenuItem(
                 priority: 3,
-                title: 'Download',
-                onTap: () {
+                title: 'Sign In',
+                onTap: () async {
                   page.jumpToPage(3);
                 },
-                icon: Icons.download,
-              ),
-              SideMenuItem(
-                priority: 4,
-                title: 'Settings',
-                onTap: () {
-                  page.jumpToPage(4);
+                icon: Icons.exit_to_app,
+              ): SideMenuItem(
+                priority: 3,
+                title: 'Sign Out',
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  setState(() {});
+                  page.jumpToPage(3);
                 },
-                icon: Icons.settings,
-              ),
-              SideMenuItem(
-                priority: 6,
-                title: 'Exit',
-                onTap: () async {},
                 icon: Icons.exit_to_app,
               ),
             ],
           ),
           Expanded(
             child: PageView(
+              physics: const NeverScrollableScrollPhysics(),
               controller: page,
               children: [
-                Dashboard(),
                 Feed(),
-                Container(
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(
-                      'Page\n   2',
-                      style: TextStyle(fontSize: 35),
-                    ),
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(
-                      'Page\n   3',
-                      style: TextStyle(fontSize: 35),
-                    ),
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(
-                      'Page\n   4',
-                      style: TextStyle(fontSize: 35),
-                    ),
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(
-                      'Page\n   5',
-                      style: TextStyle(fontSize: 35),
-                    ),
-                  ),
-                ),
+                Dashboard(),
+                Dashboard(),
+                Auth(),
               ],
             ),
           ),

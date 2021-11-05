@@ -33,6 +33,26 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-storage.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBo0AdUtxsT23A_oxkPJqf6lOGR7hOtmF0",
+      authDomain: "wilvcdn2021.firebaseapp.com",
+      databaseURL: "https://wilvcdn2021.firebaseio.com",
+      projectId: "wilvcdn2021",
+      storageBucket: "wilvcdn2021.appspot.com",
+      messagingSenderId: "718166834847",
+      appId: "1:718166834847:web:9f1d689d23145b9bc3acaa",
+      measurementId: "G-Y8820DBC82"
+    };
+    firebase.initializeApp(firebaseConfig);
+</script>
+
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->

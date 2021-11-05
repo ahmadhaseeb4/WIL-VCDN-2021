@@ -36,6 +36,15 @@ dependencies:
   cupertino_icons: ^1.0.2
   easy_sidemenu: ^0.1.1+1
   google_fonts: ^2.1.0
+  auto_size_text: ^3.0.0
+  pull_to_refresh: ^2.0.0
+  cloud_firestore: ^2.5.4
+  firebase_storage: ^10.0.6
+  firebase_core: ^1.8.0
+  octo_image: ^1.0.0+1
+  readmore: ^2.1.0
+  firebase_auth: ^3.1.5
+  flutter_login: ^2.2.1
 
 dev_dependencies:
   flutter_test:
