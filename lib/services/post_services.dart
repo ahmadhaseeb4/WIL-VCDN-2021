@@ -4,6 +4,7 @@ import 'package:pwot/models/commentModel.dart';
 import 'package:pwot/models/postModel.dart';
 
 class PostServices {
+
   static Future<List<PostModel>> retrieveAllPosts() async {
     List<PostModel> posts = [];
     await FirebaseFirestore.instance.collection("posts").get().then((value) {
@@ -22,6 +23,7 @@ class PostServices {
     await FirebaseFirestore.instance.collection("comments").get().then((value) {
       value.docs.forEach((element) {
         CommentModel commentModel = CommentModel.fromJson(element.data());
+        commentModel.cid = element.id;
         comments.add(commentModel);
       });
     });
@@ -29,7 +31,49 @@ class PostServices {
     return comments;
   }
 
-  static Future<bool> addComment(String postID, String comment) async {
-    return false;
+  static Future<bool> addComment(String comment, String userID, String user_name, String postID) async {
+    bool status = false;
+    CollectionReference posts = FirebaseFirestore.instance.collection('posts');
+    CommentModel commentModel = CommentModel(
+        commentDate: DateTime.now().toIso8601String(),
+        commentNo: 0,
+        text: comment,
+        userID: userID,
+        username: user_name
+    );
+
+    //adding comment
+    await FirebaseFirestore.instance.collection("comments").add(commentModel.toJson()).then((value) async {
+      //extracting post with postID
+      DocumentSnapshot postRef = await posts.doc(postID).get();
+      Map<String, dynamic> postMap = postRef.data() as Map<String, dynamic>;
+      PostModel postModel = PostModel.fromJson(postMap);
+      postModel.comments.add(value.id);
+      await posts.doc(postID).update(postModel.toJson()).then((value) => status = true);
+    }).onError((error, stackTrace) {
+      print("There was an error. $error");
+    });
+
+    return status;
+  }
+
+  static Future<bool> deleteComment({required String postID, required String commentID}) async {
+    print("POST ID $postID - COMMENT ID $commentID");
+    bool status = false;
+    CollectionReference commentsCR = FirebaseFirestore.instance.collection('comments');
+    CollectionReference postsCR = FirebaseFirestore.instance.collection('posts');
+
+    await commentsCR.doc(commentID).delete().then((value) async {
+      print("Comment deleted.");
+      DocumentSnapshot postRef = await postsCR.doc(postID).get();
+      Map<String, dynamic> postMap = postRef.data() as Map<String, dynamic>;
+      PostModel postModel = PostModel.fromJson(postMap);
+      postModel.comments.remove(commentID);
+      await postsCR.doc(postID).update(postModel.toJson()).then((value) => status = true);
+      print("Post updated after comment deleted.");
+    }).onError((error, stackTrace) {
+      print("Something went wrong while deleting comment.");
+    });
+    return status;
   }
 }

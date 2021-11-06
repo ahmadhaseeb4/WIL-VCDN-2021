@@ -1,4 +1,5 @@
 class CommentModel {
+  String _cid = "";
   String _commentDate = "";
   int _commentNo = 0;
   String _text = "";
@@ -18,6 +19,8 @@ class CommentModel {
     this._username = username;
   }
 
+  String get cid => _cid;
+  set cid(String cid) => _cid = cid;
   String get commentDate => _commentDate;
   set commentDate(String commentDate) => _commentDate = commentDate;
   int get commentNo => _commentNo;

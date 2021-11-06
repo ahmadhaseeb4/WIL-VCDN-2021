@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwot/pages/auth/widgets/snackbar.dart';
+import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
+import 'package:flash/flash.dart';
+
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -22,8 +25,9 @@ class _SignUpState extends State<SignUp> {
   TextEditingController signupEmailController = TextEditingController();
   TextEditingController signupNameController = TextEditingController();
   TextEditingController signupPasswordController = TextEditingController();
-  TextEditingController signupConfirmPasswordController =
-      TextEditingController();
+  TextEditingController signupConfirmPasswordController = TextEditingController();
+
+  bool loader = false;
 
   @override
   void dispose() {
@@ -51,8 +55,8 @@ class _SignUpState extends State<SignUp> {
                 ),
                 child: Container(
                   width: 300.0,
-                  height: 360.0,
-                  child: Column(
+                  height: 400.0,
+                  child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,)) : Column(
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(
@@ -61,21 +65,44 @@ class _SignUpState extends State<SignUp> {
                           focusNode: focusNodeName,
                           controller: signupNameController,
                           keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.words,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: AppColor.bgSideMenu),
+                          decoration: InputDecoration(
                             border: InputBorder.none,
                             icon: Icon(
-                              FontAwesomeIcons.user,
-                              color: Colors.black,
+                              FontAwesomeIcons.userAlt,
+                              color: AppColor.bgSideMenu,
+                              size: 22.0,
                             ),
-                            hintText: 'Name',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                            hintText: 'Full Name',
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
+                          ),
+                          onSubmitted: (_) {
+                            focusNodeName.requestFocus();
+                          },
+                        ),
+                      ),
+                      Container(
+                        width: 250.0,
+                        height: 2.0,
+                        color: AppColor.yellow,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                        child: TextField(
+                          focusNode: focusNodeEmail,
+                          controller: signupEmailController,
+                          keyboardType: TextInputType.text,
+                          style: TextStyle(color: AppColor.bgSideMenu),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            icon: Icon(
+                              FontAwesomeIcons.envelope,
+                              color: AppColor.bgSideMenu,
+                              size: 22.0,
+                            ),
+                            hintText: 'Email',
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
                           ),
                           onSubmitted: (_) {
                             focusNodeEmail.requestFocus();
@@ -84,40 +111,8 @@ class _SignUpState extends State<SignUp> {
                       ),
                       Container(
                         width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: focusNodeEmail,
-                          controller: signupEmailController,
-                          keyboardType: TextInputType.emailAddress,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.envelope,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Email Address',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                          ),
-                          onSubmitted: (_) {
-                            focusNodePassword.requestFocus();
-                          },
-                        ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
+                        height: 2.0,
+                        color: AppColor.yellow,
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
@@ -126,20 +121,16 @@ class _SignUpState extends State<SignUp> {
                           focusNode: focusNodePassword,
                           controller: signupPasswordController,
                           obscureText: _obscureTextPassword,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
+                          style: TextStyle(color: AppColor.bgSideMenu),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            icon: const Icon(
+                            icon: Icon(
                               FontAwesomeIcons.lock,
-                              color: Colors.black,
+                              size: 22.0,
+                              color: AppColor.bgSideMenu,
                             ),
                             hintText: 'Password',
-                            hintStyle: const TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
                               onTap: _toggleSignup,
                               child: Icon(
@@ -152,14 +143,15 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            focusNodeConfirmPassword.requestFocus();
+                            _toggleSignUpButton();
                           },
+                          textInputAction: TextInputAction.go,
                         ),
                       ),
                       Container(
                         width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
+                        height: 2.0,
+                        color: AppColor.yellow,
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
@@ -168,24 +160,20 @@ class _SignUpState extends State<SignUp> {
                           focusNode: focusNodeConfirmPassword,
                           controller: signupConfirmPasswordController,
                           obscureText: _obscureTextConfirmPassword,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
+                          style: TextStyle(color: AppColor.bgSideMenu),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            icon: const Icon(
+                            icon: Icon(
                               FontAwesomeIcons.lock,
-                              color: Colors.black,
+                              size: 22.0,
+                              color: AppColor.bgSideMenu,
                             ),
-                            hintText: 'Confirmation',
-                            hintStyle: const TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                            hintText: 'Confirm Password',
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
-                              onTap: _toggleSignupConfirm,
+                              onTap: _toggleSignup,
                               child: Icon(
-                                _obscureTextConfirmPassword
+                                _obscureTextPassword
                                     ? FontAwesomeIcons.eye
                                     : FontAwesomeIcons.eyeSlash,
                                 size: 15.0,
@@ -204,54 +192,85 @@ class _SignUpState extends State<SignUp> {
                 ),
               ),
               Container(
-                margin: const EdgeInsets.only(top: 340.0),
+                margin: const EdgeInsets.only(top: 370.0),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: AppColor.bgSideMenu,
-                      offset: Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                    BoxShadow(
-                      color: AppColor.bgColor,
-                      offset: Offset(1.0, 6.0),
-                      blurRadius: 20.0,
-                    ),
-                  ],
-                  gradient: LinearGradient(
-                      colors: <Color>[
-                        AppColor.bgColor,
-                        AppColor.bgSideMenu
-                      ],
-                      begin: FractionalOffset(0.2, 0.2),
-                      end: FractionalOffset(1.0, 1.0),
-                      stops: <double>[0.0, 1.0],
-                      tileMode: TileMode.clamp),
+                    borderRadius: const BorderRadius.all( Radius.circular(5.0)),
+                    color: AppColor.bgSideMenu
                 ),
                 child: MaterialButton(
                   highlightColor: Colors.transparent,
-                  splashColor: AppColor.bgColor,
-                  //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5.0))),
                   child: const Padding(
                     padding:
-                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
+                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 42.0),
                     child: Text(
-                      'SIGN UP',
+                      'Sign Up',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25.0,
-                          fontFamily: 'WorkSansBold'),
+                        color: Colors.white,
+                        fontSize: 25.0,),
                     ),
                   ),
-                  onPressed: () => _toggleSignUpButton(),
+                  onPressed: () async {
+                    if (signupNameController.text == "" || signupNameController.text.isEmpty){
+                      context.showErrorBar(content: const Text("Name can not be empty."));
+                      return;
+                    }
+                    if (signupEmailController.text == "" || signupEmailController.text.isEmpty){
+                      context.showErrorBar(content: const Text("Email can not be empty."));
+                      return;
+                    }
+                    if (signupPasswordController.text == "" || signupPasswordController.text.isEmpty){
+                      context.showErrorBar(content: const Text("Password can not be empty."));
+                      return;
+                    }
+                    if (signupConfirmPasswordController.text == "" || signupConfirmPasswordController.text.isEmpty){
+                      context.showErrorBar(content: const Text("Confirm password can not be empty."));
+                      return;
+                    }
+                    if (signupPasswordController.text != signupConfirmPasswordController.text){
+                      context.showErrorBar(content: const Text("Password and Confirm Password do not match."));
+                      return;
+                    }
+                    StartLoader();
+                    String result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text);
+                    StopLoader();
+                    if (result != "Signed Up"){
+                      context.showErrorBar(content: Text(result));
+                      return;
+                    }
+                  },
                 ),
               )
             ],
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: TextButton(
+                onPressed: () {},
+                child: Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      color: AppColor.bgSideMenu,
+                      fontSize: 16.0,
+                      fontFamily: 'WorkSansMedium'),
+                )),
+          ),
+
         ],
       ),
     );
+  }
+
+  void StopLoader() {
+    setState(() {
+      loader = false;
+    });
+  }
+
+  void StartLoader() {
+    setState(() {
+      loader = true;
+    });
   }
 
   void _toggleSignUpButton() {

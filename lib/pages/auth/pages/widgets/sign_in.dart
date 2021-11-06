@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwot/pages/auth/widgets/snackbar.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
+import 'package:flash/flash.dart';
+
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -19,6 +21,7 @@ class _SignInState extends State<SignIn> {
   final FocusNode focusNodePassword = FocusNode();
 
   bool _obscureTextPassword = true;
+  bool loader = false;
 
   @override
   void dispose() {
@@ -45,7 +48,7 @@ class _SignInState extends State<SignIn> {
                 child: Container(
                   width: 300.0,
                   height: 190.0,
-                  child: Column(
+                  child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): Column(
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(
@@ -132,8 +135,21 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   onPressed: () async {
+                    if (loginEmailController.text == "" || loginEmailController.text.isEmpty){
+                      context.showErrorBar(content: Text("Email can not be empty"));
+                      return;
+                    }
+                    if (loginPasswordController.text == "" || loginPasswordController.text.isEmpty){
+                      context.showErrorBar(content: Text("Password can not be empty"));
+                      return;
+                    }
+                    StartLoader();
                     String result = await AuthServices.SignIn(loginEmailController.text, loginPasswordController.text);
-                    print(result);
+                    StopLoader();
+                    if (result != "Signed In"){
+                      context.showErrorBar(content: Text(result));
+                      return;
+                    }
                   },
                 ),
               )
@@ -156,6 +172,18 @@ class _SignInState extends State<SignIn> {
         ],
       ),
     );
+  }
+
+  void StopLoader() {
+    setState(() {
+      loader = false;
+    });
+  }
+
+  void StartLoader() {
+    setState(() {
+      loader = true;
+    });
   }
 
   void _toggleSignInButton() {

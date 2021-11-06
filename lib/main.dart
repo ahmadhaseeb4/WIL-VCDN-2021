@@ -87,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             footer: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text('${FirebaseAuth.instance.currentUser?.email}', style: TextStyle(color: AppColor.yellow)),
+              child: Text('${FirebaseAuth.instance.currentUser?.displayName}', style: TextStyle(color: AppColor.yellow)),
             ),
             items: [
               SideMenuItem(
