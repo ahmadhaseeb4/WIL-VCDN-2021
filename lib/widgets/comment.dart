@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pwot/models/commentModel.dart';
 import 'package:pwot/services/post_services.dart';
@@ -51,10 +52,11 @@ class _CommentState extends State<Comment> {
                                     loader = false;
                                   });
                                 },
-                                  child: Icon(
+                                  child: FirebaseAuth.instance.currentUser?.uid == widget.comments[i].userID ?
+                                      Icon(
                                     Icons.delete,
                                     color: Colors.red.shade900,
-                                  )
+                                  ): Container()
                               ), flex: 1,
                             )
                           ],

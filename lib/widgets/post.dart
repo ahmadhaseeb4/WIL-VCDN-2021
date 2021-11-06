@@ -23,7 +23,6 @@ class _PostState extends State<Post> {
   late ScrollController _scrollController;
   TextEditingController postTextController = TextEditingController();
   final FocusNode focusNodePost = FocusNode();
-  int likes = 0;
   bool loader_1 = false;
   bool loader_2 = false;
 
@@ -47,7 +46,6 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    likes = widget.post.helpfuls.length;
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(
@@ -240,6 +238,10 @@ class _PostState extends State<Post> {
                         onPressed: () async {
                           if (FirebaseAuth.instance.currentUser == null) {
                             context.showErrorBar(content: const Text("Please log in to comment"));
+                            return;
+                          }
+                          if (postTextController.text == "" || postTextController.text.isEmpty){
+                            context.showErrorBar(content: const Text("Comment can not be empty"));
                             return;
                           }
                           StartLoader2();

@@ -22,9 +22,11 @@ class PostServices {
     List<CommentModel> comments = [];
     await FirebaseFirestore.instance.collection("comments").get().then((value) {
       value.docs.forEach((element) {
-        CommentModel commentModel = CommentModel.fromJson(element.data());
-        commentModel.cid = element.id;
-        comments.add(commentModel);
+        if (ids.contains(element.id)){
+          CommentModel commentModel = CommentModel.fromJson(element.data());
+          commentModel.cid = element.id;
+          comments.add(commentModel);
+        }
       });
     });
     print("Comments found - (${comments.length})");
