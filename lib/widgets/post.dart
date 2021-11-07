@@ -428,17 +428,4 @@ class _PostState extends State<Post> {
     );
   }
 
-  // Future<void> addComment() async {
-  //   CommentModel comment = CommentModel(
-  //       commentDate: DateTime.now().toIso8601String(),
-  //       commentNo: 1,
-  //       text: text,
-  //       userID: FirebaseAuth.instance.currentUser!.uid,
-  //       username: username
-  //   )
-  //   CollectionReference comments = FirebaseFirestore.instance.collection('comments');
-  //   comments.add().then((value) {
-  //     print("Comment Added!");
-  //   });
-  // }
 }

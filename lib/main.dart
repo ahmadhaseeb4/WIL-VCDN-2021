@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SideDrawer(width, height),
       floatingActionButton: FloatingActionButton(onPressed: () {
         context.showFlashDialog(
+          barrierDismissible: false,
             backgroundColor: AppColor.bgColor,
             margin: EdgeInsets.symmetric(horizontal: width * 0.2),
             persistent: true,
@@ -211,6 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   onPressed: () async {
+                    await delete();
                     controller.dismiss();
                   },
                 ),
@@ -351,17 +353,16 @@ class _MyHomePageState extends State<MyHomePage> {
         bool result = await upload(path, file);
         print("Image uploaded - $result");
       } else {
-        deleteImage(path);
+        delete();
         bool result = await upload(path, file);
         print("Image uploaded again - $result");
       }
     });
   }
 
-  Future<bool> deleteImage(String path) async {
+  Future<bool> delete() async {
     bool status = false;
-    FB.storage().refFromURL('gs://wilvcdn2021.appspot.com')
-    .child(storagePath).delete().then((value) {
+    FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(storagePath).delete().then((value) {
       status = true;
     });
 
