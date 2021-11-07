@@ -53,6 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool clear = true;
   String storagePath = "null";
   Uri? fileDownloadURL;
+  HTML.File? file;
+  String? fileName;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SideDrawer(width, height),
       floatingActionButton: FloatingActionButton(onPressed: () {
+        bool loader_2 = false;
         context.showFlashDialog(
           barrierDismissible: false,
             backgroundColor: AppColor.bgColor,
@@ -75,37 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
             title: const Text("Add a new post"),
             content: Container(
               height: height * 0.3,
-              child: Row(
+              child: loader_2 == true ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): Column(
                 children: [
-                  Expanded(
-                      child:  Container(
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Card(
-                                color: AppColor.white,
-                                elevation: 2,
-                                child: Container(
-                                  width: double.infinity,
-                                  child: Container()
-                                  )
-                              ), flex: 4,),
-                            Expanded(child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                                  color: AppColor.bgSideMenu),
-                              child: MaterialButton(
-                                highlightColor: Colors.transparent,
-                                child: const FittedBox(child: Text('Select Image', style: TextStyle(color: Colors.white, fontSize: 12))),
-                                onPressed: () async {
-                                  uploadImage();
-                                },
-                              ),
-                            ))
-                          ],
-                        ),
-                      )),
                   Expanded(
                     flex: 3,
                       child:  Container(
@@ -123,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       children: <Widget>[
                                         SingleChildScrollView(
                                           padding: EdgeInsets.symmetric(horizontal: 10),
-                                          child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): TextField(
+                                          child: TextField(
                                             focusNode: focusNodePost,
                                             controller: postTextController,
                                             keyboardType: TextInputType.multiline,
@@ -162,6 +136,52 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                         ),
                       )),
+                  Expanded(
+                      child: Column(
+                        children: [
+                          fileName == null ? Text("No Image Selected!"): FittedBox(child: Text(fileName!)),
+                          Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                              color: AppColor.bgSideMenu),
+                          child: MaterialButton(
+                            highlightColor: Colors.transparent,
+                            child: FittedBox(
+                                child: loader ? const Center(child: CircularProgressIndicator()):
+                                const Text('Select Image', style: TextStyle(color: Colors.white, fontSize: 12)
+                                )
+                            ),
+                            onPressed: () {
+                              HTML.FileUploadInputElement picker = HTML.FileUploadInputElement()..accept = 'image/*';
+                              picker.click();
+
+                              picker.onChange.listen((event) {
+                                file = picker.files?.first;
+                                setState(() {
+                                  fileName = file!.name;
+                                });
+                                context.showSuccessBar(
+                                    content: Row(
+                                      children: [
+                                        const Text("Image selected successfully - "),
+                                        Text(file!.name, style: const TextStyle(fontWeight: FontWeight.bold),),
+                                      ],
+                                    ),
+                                    duration: Duration(seconds: 5)
+                                );
+                                final reader = HTML.FileReader();
+                                reader.readAsDataUrl(file!);
+                                reader.onLoadEnd.listen((event) {
+
+                                });
+                              });
+                            },
+                          ),
+                    ),
+                        ],
+                      )
+                  )
                 ],
               ),
             ),
@@ -185,10 +205,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       return;
                     }
                     if (postTextController.text == "" || postTextController.text.isEmpty){
-                      context.showErrorBar(content: const Text("Comment can not be empty"));
+                      context.showErrorBar(content: const Text("Post can not be empty."));
                       return;
                     }
-                    //reset list & clear the field is comment was successful
+                    if (file == null){
+                      context.showErrorBar(content: const Text("Please select an image."));
+                      return;
+                    }
+                    await uploadImage();
 
                   },
                 ),
@@ -211,9 +235,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
-                  onPressed: () async {
-                    await delete();
-                    controller.dismiss();
+                  onPressed: () {
+                      WidgetsBinding.instance?.addPostFrameCallback((_) => setState(() {
+                        loader_2 = true;
+                      }));
+                    //controller.dismiss();
                   },
                 ),
               );
@@ -223,6 +249,44 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void pickImage() {
+    HTML.FileUploadInputElement picker = HTML.FileUploadInputElement()..accept = 'image/*';
+    picker.click();
+
+    picker.onChange.listen((event) {
+      file = picker.files?.first;
+
+      final reader = HTML.FileReader();
+      reader.readAsDataUrl(file!);
+      reader.onLoadEnd.listen((event) {
+        setState(() {
+          fileName = file!.name;
+        });
+      });
+    });
+  }
+
+  Future<String> uploadImage() async {
+    final datTime = DateTime.now().toIso8601String();
+    final userID = FirebaseAuth.instance.currentUser?.uid;
+    final path = '$userID/$datTime';
+    String result = await upload(path, file);
+
+    return result;
+  }
+
+  Future<String> upload(String path, var file) async {
+    String status = "null";
+    await FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(path).put(file).future.then((p0) async {
+      await p0.ref.getDownloadURL().then((value) {
+        storagePath = path;
+        clear = false;
+        status = value.toString();
+      });
+    });
+    return status;
+  }
+
   Widget SideDrawer(double width, double height) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -230,25 +294,25 @@ class _MyHomePageState extends State<MyHomePage> {
         SideMenu(
           controller: page,
           style: SideMenuStyle(
-            openSideMenuWidth: width * 0.2,
-            displayMode: SideMenuDisplayMode.auto,
-            hoverColor: AppColor.white.withAlpha(100),
-            selectedColor: AppColor.yellow,
-            selectedTitleTextStyle: TextStyle(color: AppColor.white),
-            unselectedTitleTextStyle: TextStyle(color: AppColor.white),
-            selectedIconColor: AppColor.white,
-            unselectedIconColor: AppColor.white,
-            backgroundColor: AppColor.bgSideMenu
+              openSideMenuWidth: width * 0.2,
+              displayMode: SideMenuDisplayMode.auto,
+              hoverColor: AppColor.white.withAlpha(100),
+              selectedColor: AppColor.yellow,
+              selectedTitleTextStyle: TextStyle(color: AppColor.white),
+              unselectedTitleTextStyle: TextStyle(color: AppColor.white),
+              selectedIconColor: AppColor.white,
+              unselectedIconColor: AppColor.white,
+              backgroundColor: AppColor.bgSideMenu
             // openSideMenuWidth: 200
           ),
           title: Column(
             children: [
               ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: height,
-                  maxWidth: width * 0.01,
-                ),
-                child: Icon(Icons.image)
+                  constraints: BoxConstraints(
+                    maxHeight: height,
+                    maxWidth: width * 0.01,
+                  ),
+                  child: Icon(Icons.image)
               ),
               Divider(
                 indent: 8.0,
@@ -330,36 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void pickImage({required Function(HTML.File? file) onSelected}) {
-    HTML.FileUploadInputElement picker = HTML.FileUploadInputElement()..accept = 'image/*';
-    picker.click();
-
-    picker.onChange.listen((event) {
-      HTML.File? file = picker.files?.first;
-      final reader = HTML.FileReader();
-      reader.readAsDataUrl(file!);
-      reader.onLoadEnd.listen((event) {
-        onSelected(file);
-      });
-    });
-  }
-
-  Future uploadImage() async {
-    final datTime = DateTime.now().toIso8601String();
-    final userID = FirebaseAuth.instance.currentUser?.uid;
-    final path = '$userID/$datTime';
-    pickImage(onSelected: (file) async {
-      if (clear == true){
-        bool result = await upload(path, file);
-        print("Image uploaded - $result");
-      } else {
-        delete();
-        bool result = await upload(path, file);
-        print("Image uploaded again - $result");
-      }
-    });
-  }
-
+  //not used
   Future<bool> delete() async {
     bool status = false;
     FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(storagePath).delete().then((value) {
@@ -368,20 +403,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return status;
   }
+  
+}
 
-  Future<bool> upload(String path, var file) async {
-    bool status = false;
-    await FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(path).put(file).future.then((p0) async {
-      await p0.ref.getDownloadURL().then((value) {
-        setState(() {
-          fileDownloadURL = value;
-        });
-        storagePath = path;
-        clear = false;
-        status = true;
-      });
-    });
+class AddPost extends StatefulWidget {
+  const AddPost({Key? key}) : super(key: key);
 
-    return status;
+  @override
+  _AddPostState createState() => _AddPostState();
+}
+
+class _AddPostState extends State<AddPost> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Text("Hi"),
+    );
   }
 }
+

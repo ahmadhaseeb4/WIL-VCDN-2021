@@ -21,10 +21,7 @@ class Post extends StatefulWidget {
 
 class _PostState extends State<Post> {
   late ScrollController _scrollController;
-  TextEditingController postTextController = TextEditingController();
-  final FocusNode focusNodePost = FocusNode();
   bool loader_1 = false;
-  bool loader_2 = false;
 
   @override
   void initState() {
@@ -38,7 +35,6 @@ class _PostState extends State<Post> {
   @override
   void dispose() {
     _scrollController.dispose();
-    focusNodePost.dispose();
     super.dispose();
   }
 
@@ -59,373 +55,416 @@ class _PostState extends State<Post> {
               ))
             : Row(
                 children: [
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Expanded(
-                        flex: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 5),
-                          child: Card(
-                            color: AppColor.bgColor,
-                            elevation: 2,
-                            child: OctoImage(
-                              image: NetworkImage(widget.post.imageAddress),
-                              progressIndicatorBuilder: OctoProgressIndicator.circularProgressIndicator(),
-                              errorBuilder: OctoError.icon(color: Colors.red),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          child: Container(
-                            padding:
-                                EdgeInsets.symmetric(vertical: height * 0.015),
-                            child: FittedBox(
-                              fit: BoxFit.cover,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  widget.post.helpfuls.contains(FirebaseAuth
-                                          .instance.currentUser?.uid)
-                                      ? Icon(
-                                          Icons.thumb_up_alt_outlined,
-                                          color: AppColor.yellow,
-                                        )
-                                      : Icon(
-                                          Icons.thumb_up_alt_outlined,
-                                          color: AppColor.bgSideMenu,
-                                        ),
-                                  widget.post.helpfuls.contains(FirebaseAuth
-                                          .instance.currentUser?.uid)
-                                      ? Row(
-                                          children: [
-                                            Text(" Awesome",
-                                                style: TextStyle(
-                                                    color: AppColor.yellow)),
-                                            Text(
-                                                " - ${widget.post.helpfuls.length}")
-                                          ],
-                                        )
-                                      : Row(
-                                          children: [
-                                            Text(" Awesome",
-                                                style: TextStyle(
-                                                    color:
-                                                        AppColor.bgSideMenu)),
-                                            Text(
-                                                " - ${widget.post.helpfuls.length}")
-                                          ],
-                                        ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          onTap: () async {
-                            if (FirebaseAuth.instance.currentUser == null) {
-                              context.showErrorBar(
-                                  content: const Text(
-                                      "Please log in to continue..."));
-                              return;
-                            }
-                            StartLoader1();
-                            String currentPostID = widget.post.pid;
-                            CollectionReference postCollection =
-                                FirebaseFirestore.instance.collection('posts');
-                            DocumentSnapshot data =
-                                await postCollection.doc(currentPostID).get();
-
-                            //if not liked, like it
-                            if (!widget.post.helpfuls.contains(
-                                FirebaseAuth.instance.currentUser?.uid)) {
-                              widget.post.helpfuls
-                                  .add(FirebaseAuth.instance.currentUser!.uid);
-                              postCollection
-                                  .doc(currentPostID)
-                                  .update(widget.post.toJson())
-                                  .then((value) {
-                                StopLoader1();
-                              });
-                            } else {
-                              //remove the like
-                              widget.post.helpfuls.remove(
-                                  FirebaseAuth.instance.currentUser!.uid);
-                              postCollection
-                                  .doc(currentPostID)
-                                  .update(widget.post.toJson())
-                                  .then((value) {
-                                StopLoader1();
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  )),
-                  Expanded(child: columnTwo(height, width))
+                  Expanded(child: columnOne()),
+                  Expanded(child: columnTwo())
                 ],
               ),
       ),
     );
   }
-
-  Widget columnTwo(var height, var width) {
+  Widget columnOne() {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     return Column(
       children: [
-        Expanded(
-          flex: 8,
-          child: Container(
-            padding: EdgeInsets.symmetric(
-                vertical: height * 0.02, horizontal: width * 0.01),
-            child: PostText(),
-          ),
-        ),
-        Expanded(
-          child: InkWell(
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: height * 0.015),
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.comment,
-                      color: AppColor.bgSideMenu,
-                    ),
-                    Text(
-                      " Comment",
-                      style: TextStyle(color: AppColor.bgSideMenu),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            onTap: () async {
-              StartLoader1();
-              List<CommentModel> comments = await PostServices.retrievePostComments(widget.post.comments);
-              StopLoader1();
-              //once comments have been found, show comment dialog
-              context.showFlashDialog(
-                  margin: EdgeInsets.symmetric(
-                    horizontal: width * 0.2,
-                  ),
-                  backgroundColor: AppColor.bgColor,
-                  persistent: true,
-                  title: const Text('Comments'),
-                  content: loader_2 ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): Column(
-                    children: [
-                      Comment(comments: comments, postID: widget.post.pid,),
-                      CommentField(height, width),
-                    ],
-                  ),
-                  negativeActionBuilder: (context, controller, _) {
-                    return Container(
-                      decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5.0)),
-                          color: AppColor.bgSideMenu),
-                      child: MaterialButton(
-                        highlightColor: Colors.transparent,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: height * 0.01,
-                              horizontal: width * 0.03),
-                          child: const Text('Comment', style: TextStyle(color: Colors.white)),
-                        ),
-                        onPressed: () async {
-                          if (FirebaseAuth.instance.currentUser == null) {
-                            context.showErrorBar(content: const Text("Please log in to comment"));
-                            return;
-                          }
-                          if (postTextController.text == "" || postTextController.text.isEmpty){
-                            context.showErrorBar(content: const Text("Comment can not be empty"));
-                            return;
-                          }
-                          StartLoader2();
-                          bool result = await PostServices.addComment(
-                              postTextController.text,
-                              FirebaseAuth.instance.currentUser!.uid,
-                              FirebaseAuth.instance.currentUser!.displayName!,
-                              widget.post.pid
-                          );
-                          //reset list & clear the field is comment was successful
-                          if (result == true) {
-                            List<CommentModel> newComments =  await PostServices.retrievePostComments(widget.post.comments);
-                            setState(() {
-                              print("Refreshing list view");
-                              comments = newComments;
-                              StopLoader2();
-                            });
-                          }
-                        },
-                      ),
-                    );
-                  },
-                  positiveActionBuilder: (context, controller, _) {
-                    return Container(
-                      decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5.0)),
-                          color: Colors.red.shade900),
-                      child: MaterialButton(
-                        highlightColor: Colors.transparent,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: height * 0.01,
-                              horizontal: width * 0.03),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        onPressed: () async {
-                          controller.dismiss();
-                        },
-                      ),
-                    );
-                  });
-            },
-          ),
-        ),
+        Image(),
+        Awesome(height, width)
       ],
     );
   }
 
-  void StartLoader1() {
+  Widget Image() {
+    return Expanded(
+      flex: 8,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        width: double.infinity,
+        child: Card(
+          color: AppColor.bgColor,
+          elevation: 2,
+          child: OctoImage(
+            image: NetworkImage(widget.post.imageAddress),
+            progressIndicatorBuilder: OctoProgressIndicator.circularProgressIndicator(),
+            errorBuilder: OctoError.icon(color: Colors.red),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget Awesome(var height, var width) {
+    return Expanded(
+      child: InkWell(
+        child: Container(
+          padding:
+          EdgeInsets.symmetric(vertical: height * 0.015),
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                widget.post.helpfuls.contains(FirebaseAuth
+                    .instance.currentUser?.uid)
+                    ? Icon(
+                  Icons.thumb_up_alt_outlined,
+                  color: AppColor.yellow,
+                )
+                    : Icon(
+                  Icons.thumb_up_alt_outlined,
+                  color: AppColor.bgSideMenu,
+                ),
+                widget.post.helpfuls.contains(FirebaseAuth
+                    .instance.currentUser?.uid)
+                    ? Row(
+                  children: [
+                    Text(" Awesome",
+                        style: TextStyle(
+                            color: AppColor.yellow)),
+                    Text(
+                        " - ${widget.post.helpfuls.length}")
+                  ],
+                )
+                    : Row(
+                  children: [
+                    Text(" Awesome",
+                        style: TextStyle(
+                            color:
+                            AppColor.bgSideMenu)),
+                    Text(
+                        " - ${widget.post.helpfuls.length}")
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () async {
+          if (FirebaseAuth.instance.currentUser == null) {
+            context.showErrorBar(
+                content: const Text(
+                    "Please log in to continue..."));
+            return;
+          }
+          StrL1();
+          String currentPostID = widget.post.pid;
+          CollectionReference postCollection =
+          FirebaseFirestore.instance.collection('posts');
+          DocumentSnapshot data =
+          await postCollection.doc(currentPostID).get();
+
+          //if not liked, like it
+          if (!widget.post.helpfuls.contains(
+              FirebaseAuth.instance.currentUser?.uid)) {
+            widget.post.helpfuls
+                .add(FirebaseAuth.instance.currentUser!.uid);
+            postCollection
+                .doc(currentPostID)
+                .update(widget.post.toJson())
+                .then((value) {
+              StpL1();
+            });
+          } else {
+            //remove the like
+            widget.post.helpfuls.remove(
+                FirebaseAuth.instance.currentUser!.uid);
+            postCollection
+                .doc(currentPostID)
+                .update(widget.post.toJson())
+                .then((value) {
+              StpL1();
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget columnTwo() {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+    return Column(
+      children: [
+        PostText(height, width),
+        CommentButton(height, width)
+      ],
+    );
+  }
+
+  Widget PostText(var height, var width) {
+    return Expanded(
+      flex: 8,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            vertical: height * 0.02, horizontal: width * 0.01),
+        child: Container(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.supervised_user_circle,
+                    color: AppColor.bgSideMenu,
+                  ),
+                  Text(widget.post.username,
+                      style: TextStyle(color: AppColor.bgSideMenu)),
+                ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.date_range,
+                    color: AppColor.bgSideMenu,
+                  ),
+                  Text(
+                    widget.post.postedDate,
+                    style: TextStyle(color: AppColor.bgSideMenu),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Expanded(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    child: ReadMoreText(
+                      widget.post.text,
+                      style: Theme.of(context).textTheme.bodyText2,
+                      trimLines: 2,
+                      colorClickableText: Colors.yellow,
+                      trimMode: TrimMode.Line,
+                      trimCollapsedText: 'Show more',
+                      trimExpandedText: 'Show less',
+                      moreStyle: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColor.yellow),
+                      lessStyle: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColor.yellow),
+                    ),
+                  ))
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget CommentButton(var height, var width) {
+    return Expanded(
+      child: InkWell(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: height * 0.015),
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.comment,
+                  color: AppColor.bgSideMenu,
+                ),
+                Text(
+                  " Comment",
+                  style: TextStyle(color: AppColor.bgSideMenu),
+                ),
+              ],
+            ),
+          ),
+        ),
+        onTap: () async {
+          StrL1();
+          List<CommentModel> comments = await PostServices.retrievePostComments(widget.post.comments);
+          StpL1();
+          //once comments have been found, show comment dialog
+          context.showFlashDialog(
+              margin: EdgeInsets.symmetric(
+                horizontal: width * 0.2,
+              ),
+              backgroundColor: AppColor.bgColor,
+              persistent: true,
+              title: const Text('Comments'),
+              content: CommentView(post: widget.post, comments: comments,)
+          );}
+      ),
+    );
+  }
+
+  void StrL1() {
     setState(() {
       loader_1 = true;
     });
   }
 
-  void StopLoader1() {
+  void StpL1() {
     setState(() {
       loader_1 = false;
     });
   }
+}//END
 
-  void StartLoader2() {
-    setState(() {
-      loader_2 = true;
-    });
+//this is the home widget that gets attached to the flash dialog above
+class CommentView extends StatefulWidget {
+  const CommentView({Key? key, required this.comments, required this.post}) : super(key: key);
+  final List<CommentModel> comments;
+  final PostModel post;
+
+  @override
+  _CommentViewState createState() => _CommentViewState();
+}
+
+class _CommentViewState extends State<CommentView> {
+  TextEditingController postTextController = TextEditingController();
+  final FocusNode focusNodePost = FocusNode();
+  List<CommentModel> comments = [];
+  bool loader = false;
+
+  @override
+  void dispose() {
+    focusNodePost.dispose();
+    super.dispose();
   }
 
-  void StopLoader2() {
-    setState(() {
-      loader_2 = false;
+  @override
+  void initState() {
+    PostServices.retrievePostComments(widget.post.comments).then((value) {
+      comments = value;
     });
+    super.initState();
   }
 
-  Widget PostText() {
-    return Container(
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+
+    return loader ? Center(child: CircularProgressIndicator(),): Container(
       child: Column(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.supervised_user_circle,
-                color: AppColor.bgSideMenu,
-              ),
-              Text(widget.post.username,
-                  style: TextStyle(color: AppColor.bgSideMenu)),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Icon(
-                Icons.date_range,
-                color: AppColor.bgSideMenu,
-              ),
-              Text(
-                widget.post.postedDate,
-                style: TextStyle(color: AppColor.bgSideMenu),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Expanded(
-              child: SingleChildScrollView(
-            controller: _scrollController,
-            child: ReadMoreText(
-              widget.post.text,
-              style: Theme.of(context).textTheme.bodyText2,
-              trimLines: 2,
-              colorClickableText: Colors.yellow,
-              trimMode: TrimMode.Line,
-              trimCollapsedText: 'Show more',
-              trimExpandedText: 'Show less',
-              moreStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColor.yellow),
-              lessStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColor.yellow),
+          Comment(comments: widget.comments, postID: widget.post.pid,),
+          Card(
+            elevation: 2.0,
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5.0),
             ),
-          ))
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: TextField(
+                      focusNode: focusNodePost,
+                      controller: postTextController,
+                      keyboardType: TextInputType.multiline,
+                      style: TextStyle(color: AppColor.bgSideMenu),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        icon: Icon(
+                          FontAwesomeIcons.pencilAlt,
+                          color: AppColor.bgSideMenu,
+                          size: 22.0,
+                        ),
+                        hintText: 'Enter your post here...',
+                        hintStyle: TextStyle(color: AppColor.bgSideMenu),
+                      ),
+                      onSubmitted: (_) {
+                        focusNodePost.requestFocus();
+                      },
+                      minLines: 1,
+                      maxLines: 3,
+                      maxLength: 256,
+                    ),
+                  ),
+                  Container(
+                    width: width * 0.5,
+                    height: 5.0,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(25)),
+                      color: AppColor.yellow,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                      const BorderRadius.all(Radius.circular(5.0)),
+                      color: AppColor.bgSideMenu),
+                  child: MaterialButton(
+                    highlightColor: Colors.transparent,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: height * 0.01,
+                          horizontal: width * 0.03),
+                      child: const Text('Comment', style: TextStyle(color: Colors.white)),
+                    ),
+                    onPressed: () async {
+                      if (FirebaseAuth.instance.currentUser == null) {
+                        context.showErrorBar(content: const Text("Please log in to comment"));
+                        return;
+                      }
+                      if (postTextController.text == "" || postTextController.text.isEmpty){
+                        context.showErrorBar(content: const Text("Comment can not be empty"));
+                        return;
+                      }
+                      setState(() {
+                        loader = true;
+                      });
+                      bool result = await PostServices.addComment(
+                          postTextController.text,
+                          FirebaseAuth.instance.currentUser!.uid,
+                          FirebaseAuth.instance.currentUser!.displayName!,
+                          widget.post.pid
+                      );
+                      //reset list & clear the field is comment was successful
+                      if (result == true) {
+                        List<CommentModel> newComments =  await PostServices.retrievePostComments(widget.post.comments);
+                        setState(() {
+                          comments = newComments;
+                          loader = false;
+                        });
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(width: 5,),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                    color: Colors.red.shade900
+                  ),
+                  child: MaterialButton(
+                  highlightColor: Colors.transparent,
+                  child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: height * 0.01,
+                    horizontal: width * 0.03
+                  ),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                  ), onPressed: () async {
+
+                  }),
+                )
+              ],
+            ),
+          )
         ],
       ),
     );
   }
-
-  Widget CommentField(var height, var width) {
-    return Card(
-      elevation: 2.0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: loader_2 ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): TextField(
-                focusNode: focusNodePost,
-                controller: postTextController,
-                keyboardType: TextInputType.multiline,
-                style: TextStyle(color: AppColor.bgSideMenu),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  icon: Icon(
-                    FontAwesomeIcons.pencilAlt,
-                    color: AppColor.bgSideMenu,
-                    size: 22.0,
-                  ),
-                  hintText: 'Enter your post here...',
-                  hintStyle: TextStyle(color: AppColor.bgSideMenu),
-                ),
-                onSubmitted: (_) {
-                  focusNodePost.requestFocus();
-                },
-                minLines: 1,
-                maxLines: 3,
-                maxLength: 256,
-              ),
-            ),
-            Container(
-              width: width * 0.5,
-              height: 5.0,
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(25)),
-                color: AppColor.yellow,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 }
+
