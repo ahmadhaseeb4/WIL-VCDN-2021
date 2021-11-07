@@ -48,12 +48,10 @@ class _PostState extends State<Post> {
     var width = MediaQuery.of(context).size.width;
     return Card(
       elevation: 5,
-      shape: RoundedRectangleBorder(
-          side: BorderSide(color: AppColor.bgSideMenu, width: 0.5)),
       shadowColor: AppColor.bgSideMenu,
       child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), color: AppColor.white,),
         height: height,
-        color: AppColor.white,
         child: loader_1
             ? Center(
                 child: CircularProgressIndicator(
@@ -69,10 +67,14 @@ class _PostState extends State<Post> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 5, horizontal: 5),
-                          child: OctoImage(
-                            image: NetworkImage(widget.post.imageAddress),
-                            progressIndicatorBuilder: OctoProgressIndicator.circularProgressIndicator(),
-                            errorBuilder: OctoError.icon(color: Colors.red),
+                          child: Card(
+                            color: AppColor.bgColor,
+                            elevation: 2,
+                            child: OctoImage(
+                              image: NetworkImage(widget.post.imageAddress),
+                              progressIndicatorBuilder: OctoProgressIndicator.circularProgressIndicator(),
+                              errorBuilder: OctoError.icon(color: Colors.red),
+                            ),
                           ),
                         ),
                       ),
