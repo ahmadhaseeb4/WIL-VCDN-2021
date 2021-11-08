@@ -279,7 +279,8 @@ class _PostState extends State<Post> {
         ),
         onTap: () async {
           StrL1();
-          List<CommentModel> comments = await PostServices.retrievePostComments(widget.post.comments);
+          PostModel post = await PostServices.extractPostInfo(widget.post.pid);
+          List<CommentModel> comments = await PostServices.retrievePostComments(post.comments);
           StpL1();
           //once comments have been found, show comment dialog
           context.showFlashDialog(
@@ -365,14 +366,20 @@ class _CommentViewState extends State<CommentView> {
                             Expanded(child: Text(comments[i].username, style: const TextStyle(fontWeight: FontWeight.bold),), flex: 22,),
                             Expanded(
                               child: GestureDetector(
-                                  onTap: () {
+                                  onTap: () async {
                                     setState(() {
                                       loader = true;
                                     });
-                                    PostServices.deleteComment(postID: widget.post.pid, commentID: widget.comments[i].cid);
-                                    setState(() {
-                                      loader = false;
-                                    });
+                                    bool result = await PostServices.deleteComment(postID: widget.post.pid, commentID: widget.comments[i].cid);
+                                    //reset list & clear the field is comment was successful
+                                    if (result == true) {
+                                      PostModel post = await PostServices.extractPostInfo(widget.post.pid);
+                                      List<CommentModel> newComments =  await PostServices.retrievePostComments(post.comments);
+                                      comments = newComments;
+                                      setState(() {
+                                        loader = false;
+                                      });
+                                    }
                                   },
                                   child: FirebaseAuth.instance.currentUser?.uid == comments[i].userID ?
                                   Icon(
