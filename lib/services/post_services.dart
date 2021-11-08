@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:pwot/models/commentModel.dart';
 import 'package:pwot/models/postModel.dart';
 
@@ -77,5 +76,18 @@ class PostServices {
       print("Something went wrong while deleting comment.");
     });
     return status;
+  }
+
+  static Future<PostModel> extractPostInfo(String postID) async {
+    //once you add the comment, use the selected post's ID and re-download it data so that the re-downloaded data
+    //reflects the newly added comment ID
+    List<PostModel> posts = await retrieveAllPosts();
+    late PostModel post;
+    posts.forEach((element) {
+      if (element.pid == postID){
+        post = element;
+      }
+    });
+    return post;
   }
 }
