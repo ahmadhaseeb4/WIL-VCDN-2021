@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:pwot/models/postModel.dart';
 import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
+import 'package:pwot/widgets/add-post.dart';
 import 'package:pwot/widgets/post.dart';
+import 'package:flash/flash.dart';
+
 
 class Feed extends StatefulWidget {
-  const Feed({Key? key}) : super(key: key);
+  const Feed({Key? key, required this.posts}) : super(key: key);
+  final List<PostModel> posts;
 
   @override
   _FeedState createState() => _FeedState();
@@ -58,46 +63,47 @@ class _FeedState extends State<Feed> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    return Container(
-      color: AppColor.bgColor,
-      child: loader ? Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),): SmartRefresher(
-        controller: _refreshController,
-        enablePullDown: true,
-        enablePullUp: true,
-        header: WaterDropHeader(),
-        onRefresh: _onRefresh,
-        onLoading: _onLoading,
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 50),
-          controller: _scrollController,
-          itemBuilder: (c, i) {
-            return width < 850 ?
-            SizedBox(child: Post(post: posts[i]), height: height,):
-            SizedBox(child: Post(post: posts[i]), height: height * 0.5);
-          },
-          itemCount: posts.length,
+    return Scaffold(
+      body: Container(
+        color: AppColor.bgColor,
+        child: loader ? Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),): SmartRefresher(
+          controller: _refreshController,
+          enablePullDown: true,
+          enablePullUp: true,
+          header: WaterDropHeader(),
+          child: posts.length == 0 ? Center(child: const Text("No data available")): ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 50),
+            controller: _scrollController,
+            itemBuilder: (c, i) {
+              return width < 850 ?
+              SizedBox(child: Post(post: posts[i]), height: height,):
+              SizedBox(child: Post(post: posts[i]), height: height * 0.5);
+            },
+            itemCount: posts.length,
+          ),
         ),
       ),
+      floatingActionButton: FloatingActionButton( onPressed: () {
+        Completer completer = Completer();
+        context.showFlashDialog(
+          dismissCompleter: completer,
+          barrierDismissible: false,
+          backgroundColor: AppColor.bgColor,
+          margin: EdgeInsets.symmetric(horizontal: width * 0.2),
+          persistent: true,
+          title: const Text("Add a new post"),
+          content: AddPost(completer: completer, refresh: refreshPostList,),
+        );
+      }, child: Icon(Icons.add, color: AppColor.bgColor,), backgroundColor: AppColor.bgSideMenu,),
     );
   }
 
-  void _onRefresh() async {
-    print("Refreshed!");
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
+  refreshPostList() async {
+    List<PostModel> data = await PostServices.retrieveAllPosts();
+    print("Refreshing list...");
+    setState(() {
+      posts = data;
+    });
   }
 
-  void _onLoading() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    //posts.add((items.length+1).toString());
-    if(mounted)
-      setState(() {
-
-      });
-    _refreshController.loadComplete();
-  }
 }

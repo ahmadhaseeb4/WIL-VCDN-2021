@@ -13,8 +13,13 @@ class PostServices {
         posts.add(postModel);
       });
     });
+    List<PostModel> sortedList = [];
     print("All posts found - (${posts.length})");
-    return posts;
+    posts.sort((a, b) => a.postedDate.compareTo(b.postedDate));
+    posts.reversed.forEach((element) {
+      sortedList.add(element);
+    });
+    return sortedList;
   }
 
   static Future<List<CommentModel>> retrievePostComments(List<String> ids) async {

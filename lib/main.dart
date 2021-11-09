@@ -8,10 +8,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
 import 'package:pwot/pages/dashboard.dart';
 import 'package:pwot/pages/feed.dart';
+import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:flash/flash.dart';
 import 'package:firebase/firebase.dart' as FB;
 import 'package:pwot/widgets/add-post.dart';
+
+import 'models/postModel.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +48,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   PageController page = PageController();
+  List<PostModel> posts = [];
   bool loader = false;
   bool clear = true;
   String storagePath = "null";
@@ -64,18 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: AppColor.bgSideMenu,
       ),
       body: SideDrawer(width, height),
-      floatingActionButton: FloatingActionButton( onPressed: () {
-        Completer completer = Completer();
-        context.showFlashDialog(
-          dismissCompleter: completer,
-          barrierDismissible: false,
-            backgroundColor: AppColor.bgColor,
-            margin: EdgeInsets.symmetric(horizontal: width * 0.2),
-            persistent: true,
-            title: const Text("Add a new post"),
-            content: AddPost(completer: completer,),
-        );
-      }, child: Icon(Icons.add, color: AppColor.bgColor,), backgroundColor: AppColor.bgSideMenu,),
     );
   }
 
@@ -191,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
             physics: const NeverScrollableScrollPhysics(),
             controller: page,
             children: [
-              Feed(),
+              Feed(posts: posts,),
               Dashboard(),
               Dashboard(),
               Dashboard(),
@@ -202,6 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
   }
+
 
   //not used
   Future<bool> delete() async {

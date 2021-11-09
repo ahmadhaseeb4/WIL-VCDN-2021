@@ -20,8 +20,9 @@ import 'package:flash/flash.dart';
 
 
 class AddPost extends StatefulWidget {
-  const AddPost({Key? key, required this.completer,}) : super(key: key);
+  const AddPost({Key? key, required this.completer, required this.refresh}) : super(key: key);
   final Completer completer;
+  final Function refresh;
 
 
   @override
@@ -193,6 +194,8 @@ class _AddPostState extends State<AddPost> {
                             print(image.id + " - " + image.url);
                             bool result = await uploadPost(image.url, commentTextController.text);
                             print(result);
+                            widget.completer.complete();
+                            widget.refresh();
                           },
                         ),
                       )
@@ -209,7 +212,7 @@ class _AddPostState extends State<AddPost> {
                           highlightColor: Colors.transparent,
                           child: Text("Cancel"),
                           onPressed: () {
-
+                            widget.completer.complete();
                           },
                         ),
                       )
