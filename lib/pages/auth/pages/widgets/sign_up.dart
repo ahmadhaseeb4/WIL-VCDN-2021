@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pwot/models/authDataModel.dart';
 import 'package:pwot/pages/auth/widgets/snackbar.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
@@ -7,7 +9,9 @@ import 'package:flash/flash.dart';
 
 
 class SignUp extends StatefulWidget {
-  const SignUp({Key? key}) : super(key: key);
+  const SignUp({Key? key, required this.pageController, required this.refreshUI}) : super(key: key);
+  final PageController pageController;
+  final Function refreshUI;
 
   @override
   _SignUpState createState() => _SignUpState();
@@ -231,11 +235,14 @@ class _SignUpState extends State<SignUp> {
                       return;
                     }
                     StartLoader();
-                    String result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text);
+                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text);
                     StopLoader();
-                    if (result != "Signed Up"){
-                      context.showErrorBar(content: Text(result));
+                    if (result.message != "Signed Up"){
+                      context.showErrorBar(content: Text(result.message));
                       return;
+                    } else if (result.message == "Signed Up") {
+                      widget.refreshUI(result.user, signupNameController.text);
+                      widget.pageController.jumpToPage(0);
                     }
                   },
                 ),

@@ -14,7 +14,7 @@ class PostServices {
       });
     });
     List<PostModel> sortedList = [];
-    print("All posts found - (${posts.length})");
+    // print("All posts found - (${posts.length})");
     posts.sort((a, b) => a.postedDate.compareTo(b.postedDate));
     posts.reversed.forEach((element) {
       sortedList.add(element);

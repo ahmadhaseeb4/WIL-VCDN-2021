@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pwot/models/authDataModel.dart';
 import 'package:pwot/pages/auth/widgets/snackbar.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
@@ -147,13 +148,13 @@ class _SignInState extends State<SignIn> {
                       return;
                     }
                     StartLoader();
-                    String result = await AuthServices.SignIn(loginEmailController.text, loginPasswordController.text);
+                    AuthData result = await AuthServices.SignIn(loginEmailController.text, loginPasswordController.text);
                     StopLoader();
-                    if (result != "Signed In"){
-                      context.showErrorBar(content: Text(result));
+                    if (result.message != "Signed In"){
+                      context.showErrorBar(content: Text(result.message));
                       return;
-                    } else if (result == "Signed In") {
-                      widget.refreshUI(FirebaseAuth.instance.currentUser!.displayName);
+                    } else if (result.message == "Signed In") {
+                      widget.refreshUI(result.user, result.user!.displayName);
                       widget.pageController.jumpToPage(0);
                     }
                   },

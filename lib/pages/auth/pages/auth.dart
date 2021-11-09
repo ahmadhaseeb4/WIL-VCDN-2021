@@ -77,7 +77,7 @@ class _AuthState extends State<Auth> with SingleTickerProviderStateMixin {
                     ),
                     ConstrainedBox(
                       constraints: const BoxConstraints.expand(),
-                      child: const SignUp(),
+                      child: SignUp(pageController: widget.pageController, refreshUI: widget.refreshUI,),
                     ),
                   ],
                 ),

@@ -16,16 +16,23 @@ import 'package:pwot/widgets/add-post.dart';
 
 import 'models/postModel.dart';
 
+User? currentUser;
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   Firebase.initializeApp();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,7 +40,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData.dark().copyWith(
           textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)),
-      home: const MyHomePage(title: 'Playwrite Occupational Therapy'),
+      home: MyHomePage(title: 'Playwrite Occupational Therapy'),
     );
   }
 }
@@ -53,11 +60,34 @@ class _MyHomePageState extends State<MyHomePage> {
   String? name;
 
   @override
+  void initState() {
+    setState(() {
+      loader = true;
+    });
+    FirebaseAuth.instance.authStateChanges().first.then((value) {
+      if (value != null){
+        currentUser = value;
+        setState(() {
+          name = currentUser!.displayName;
+          loader = false;
+        });
+      } else {
+        print("Login error!");
+        FirebaseAuth.instance.signOut();
+      }
+      setState(() {
+        loader = false;
+      });
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
 
-    return Scaffold(
+    return loader == true ? Container(child: Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),), color: AppColor.bgColor,):Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         centerTitle: true,
@@ -137,25 +167,27 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               icon: Icons.file_copy_rounded,
             ),
-            FirebaseAuth.instance.currentUser == null ?
+            currentUser == null ?
             SideMenuItem(
               priority: 4,
               title: 'Sign In',
               onTap: () async {
                 page.jumpToPage(4);
               },
-              icon: Icons.exit_to_app,
+              icon: Icons.login,
             ): SideMenuItem(
               priority: 4,
               title: 'Sign Out',
               onTap: () async {
-                await FirebaseAuth.instance.signOut();
-                setState(() {
-                  name = "";
+                await FirebaseAuth.instance.signOut().then((value) {
+                  currentUser = null;
+                  setState(() {
+                    name = "";
+                  });
+                  page.jumpToPage(0);
                 });
-                page.jumpToPage(0);
               },
-              icon: Icons.exit_to_app,
+              icon: Icons.cancel,
             ),
           ],
         ),
@@ -176,9 +208,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void refreshUI(String value) {
+  void refreshUI(User? user, String named) {
+    currentUser = user;
     setState(() {
-      name = value;
+      name = named;
     });
   }
 }
