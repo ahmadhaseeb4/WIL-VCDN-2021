@@ -1,19 +1,17 @@
+import 'dart:async';
 import 'dart:html' as HTML;
-import 'dart:typed_data';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
 import 'package:pwot/pages/dashboard.dart';
 import 'package:pwot/pages/feed.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:flash/flash.dart';
 import 'package:firebase/firebase.dart' as FB;
+import 'package:pwot/widgets/add-post.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,8 +45,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   PageController page = PageController();
-  var postTextController = TextEditingController();
-  final FocusNode focusNodePost = FocusNode();
   bool loader = false;
   bool clear = true;
   String storagePath = "null";
@@ -68,182 +64,16 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: AppColor.bgSideMenu,
       ),
       body: SideDrawer(width, height),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        bool loader_2 = false;
+      floatingActionButton: FloatingActionButton( onPressed: () {
+        Completer completer = Completer();
         context.showFlashDialog(
+          dismissCompleter: completer,
           barrierDismissible: false,
             backgroundColor: AppColor.bgColor,
             margin: EdgeInsets.symmetric(horizontal: width * 0.2),
             persistent: true,
             title: const Text("Add a new post"),
-            content: Container(
-              height: height * 0.3,
-              child: loader_2 == true ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): Column(
-                children: [
-                  Expanded(
-                    flex: 3,
-                      child:  Container(
-                        child: Column(
-                          children: [
-                            Expanded(
-                                child: Card(
-                                  elevation: 2.0,
-                                  color: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                  ),
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      children: <Widget>[
-                                        SingleChildScrollView(
-                                          padding: EdgeInsets.symmetric(horizontal: 10),
-                                          child: TextField(
-                                            focusNode: focusNodePost,
-                                            controller: postTextController,
-                                            keyboardType: TextInputType.multiline,
-                                            style: TextStyle(color: AppColor.bgSideMenu),
-                                            decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              icon: Icon(
-                                                FontAwesomeIcons.pencilAlt,
-                                                color: AppColor.bgSideMenu,
-                                                size: 22.0,
-                                              ),
-                                              hintText: 'Enter your post here...',
-                                              hintStyle: TextStyle(color: AppColor.bgSideMenu),
-                                            ),
-                                            onSubmitted: (_) {
-                                              focusNodePost.requestFocus();
-                                            },
-                                            minLines: 1,
-                                            maxLines: 3,
-                                            maxLength: 256,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: width * 0.4,
-                                          height: 5.0,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.all(Radius.circular(25)),
-                                            color: AppColor.yellow,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                            ),
-                          ],
-                        ),
-                      )),
-                  Expanded(
-                      child: Column(
-                        children: [
-                          fileName == null ? Text("No Image Selected!"): FittedBox(child: Text(fileName!)),
-                          Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                              color: AppColor.bgSideMenu),
-                          child: MaterialButton(
-                            highlightColor: Colors.transparent,
-                            child: FittedBox(
-                                child: loader ? const Center(child: CircularProgressIndicator()):
-                                const Text('Select Image', style: TextStyle(color: Colors.white, fontSize: 12)
-                                )
-                            ),
-                            onPressed: () {
-                              HTML.FileUploadInputElement picker = HTML.FileUploadInputElement()..accept = 'image/*';
-                              picker.click();
-
-                              picker.onChange.listen((event) {
-                                file = picker.files?.first;
-                                setState(() {
-                                  fileName = file!.name;
-                                });
-                                context.showSuccessBar(
-                                    content: Row(
-                                      children: [
-                                        const Text("Image selected successfully - "),
-                                        Text(file!.name, style: const TextStyle(fontWeight: FontWeight.bold),),
-                                      ],
-                                    ),
-                                    duration: Duration(seconds: 5)
-                                );
-                                final reader = HTML.FileReader();
-                                reader.readAsDataUrl(file!);
-                                reader.onLoadEnd.listen((event) {
-
-                                });
-                              });
-                            },
-                          ),
-                    ),
-                        ],
-                      )
-                  )
-                ],
-              ),
-            ),
-            negativeActionBuilder: (context, controller, _) {
-              return Container(
-                decoration: BoxDecoration(
-                    borderRadius:
-                    const BorderRadius.all(Radius.circular(5.0)),
-                    color: AppColor.bgSideMenu),
-                child: MaterialButton(
-                  highlightColor: Colors.transparent,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        vertical: height * 0.01,
-                        horizontal: width * 0.03),
-                    child: const Text('Post', style: TextStyle(color: Colors.white)),
-                  ),
-                  onPressed: () async {
-                    if (FirebaseAuth.instance.currentUser == null) {
-                      context.showErrorBar(content: const Text("Please log in to add new post."));
-                      return;
-                    }
-                    if (postTextController.text == "" || postTextController.text.isEmpty){
-                      context.showErrorBar(content: const Text("Post can not be empty."));
-                      return;
-                    }
-                    if (file == null){
-                      context.showErrorBar(content: const Text("Please select an image."));
-                      return;
-                    }
-                    await uploadImage();
-
-                  },
-                ),
-              );
-            },
-            positiveActionBuilder: (context, controller, _) {
-              return Container(
-                decoration: BoxDecoration(
-                    borderRadius:
-                    const BorderRadius.all(Radius.circular(5.0)),
-                    color: Colors.red.shade900),
-                child: MaterialButton(
-                  highlightColor: Colors.transparent,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        vertical: height * 0.01,
-                        horizontal: width * 0.03),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  onPressed: () {
-                      WidgetsBinding.instance?.addPostFrameCallback((_) => setState(() {
-                        loader_2 = true;
-                      }));
-                    //controller.dismiss();
-                  },
-                ),
-              );
-            }
+            content: AddPost(completer: completer,),
         );
       }, child: Icon(Icons.add, color: AppColor.bgColor,), backgroundColor: AppColor.bgSideMenu,),
     );
@@ -264,27 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       });
     });
-  }
-
-  Future<String> uploadImage() async {
-    final datTime = DateTime.now().toIso8601String();
-    final userID = FirebaseAuth.instance.currentUser?.uid;
-    final path = '$userID/$datTime';
-    String result = await upload(path, file);
-
-    return result;
-  }
-
-  Future<String> upload(String path, var file) async {
-    String status = "null";
-    await FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(path).put(file).future.then((p0) async {
-      await p0.ref.getDownloadURL().then((value) {
-        storagePath = path;
-        clear = false;
-        status = value.toString();
-      });
-    });
-    return status;
   }
 
   Widget SideDrawer(double width, double height) {
@@ -404,21 +213,5 @@ class _MyHomePageState extends State<MyHomePage> {
     return status;
   }
   
-}
-
-class AddPost extends StatefulWidget {
-  const AddPost({Key? key}) : super(key: key);
-
-  @override
-  _AddPostState createState() => _AddPostState();
-}
-
-class _AddPostState extends State<AddPost> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Text("Hi"),
-    );
-  }
 }
 
