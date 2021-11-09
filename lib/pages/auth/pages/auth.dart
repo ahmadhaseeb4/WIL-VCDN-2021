@@ -5,7 +5,9 @@ import 'package:pwot/pages/auth/utils/bubble_indicator_painter.dart';
 import 'package:pwot/utility/app_colors.dart';
 
 class Auth extends StatefulWidget {
-  const Auth({Key? key}) : super(key: key);
+  const Auth({Key? key, required this.pageController, required this.refreshUI}) : super(key: key);
+  final PageController pageController;
+  final Function refreshUI;
 
   @override
   _AuthState createState() => _AuthState();
@@ -71,7 +73,7 @@ class _AuthState extends State<Auth> with SingleTickerProviderStateMixin {
                   children: <Widget>[
                     ConstrainedBox(
                       constraints: const BoxConstraints.expand(),
-                      child: const SignIn(),
+                      child: SignIn(pageController: widget.pageController, refreshUI: widget.refreshUI,),
                     ),
                     ConstrainedBox(
                       constraints: const BoxConstraints.expand(),

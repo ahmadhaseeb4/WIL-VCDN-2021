@@ -50,11 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   PageController page = PageController();
   List<PostModel> posts = [];
   bool loader = false;
-  bool clear = true;
-  String storagePath = "null";
-  Uri? fileDownloadURL;
-  HTML.File? file;
-  String? fileName;
+  String? name;
 
   @override
   Widget build(BuildContext context) {
@@ -69,23 +65,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SideDrawer(width, height),
     );
-  }
-
-  void pickImage() {
-    HTML.FileUploadInputElement picker = HTML.FileUploadInputElement()..accept = 'image/*';
-    picker.click();
-
-    picker.onChange.listen((event) {
-      file = picker.files?.first;
-
-      final reader = HTML.FileReader();
-      reader.readAsDataUrl(file!);
-      reader.onLoadEnd.listen((event) {
-        setState(() {
-          fileName = file!.name;
-        });
-      });
-    });
   }
 
   Widget SideDrawer(double width, double height) {
@@ -123,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           footer: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('${FirebaseAuth.instance.currentUser?.displayName}', style: TextStyle(color: AppColor.yellow)),
+            child: name == null ? const Text(""): Text(name!, style: TextStyle(color: AppColor.yellow)),
           ),
           items: [
             SideMenuItem(
@@ -171,8 +150,10 @@ class _MyHomePageState extends State<MyHomePage> {
               title: 'Sign Out',
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
-                setState(() {});
-                page.jumpToPage(1);
+                setState(() {
+                  name = "";
+                });
+                page.jumpToPage(0);
               },
               icon: Icons.exit_to_app,
             ),
@@ -187,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Dashboard(),
               Dashboard(),
               Dashboard(),
-              Auth(),
+              Auth(pageController: page, refreshUI: refreshUI,),
             ],
           ),
         ),
@@ -195,16 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
-  //not used
-  Future<bool> delete() async {
-    bool status = false;
-    FB.storage().refFromURL('gs://wilvcdn2021.appspot.com').child(storagePath).delete().then((value) {
-      status = true;
+  void refreshUI(String value) {
+    setState(() {
+      name = value;
     });
-
-    return status;
   }
-  
 }
 

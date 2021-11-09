@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwot/pages/auth/widgets/snackbar.dart';
@@ -7,7 +8,9 @@ import 'package:flash/flash.dart';
 
 
 class SignIn extends StatefulWidget {
-  const SignIn({Key? key}) : super(key: key);
+  const SignIn({Key? key, required this.pageController, required this.refreshUI}) : super(key: key);
+  final PageController pageController;
+  final Function refreshUI;
 
   @override
   _SignInState createState() => _SignInState();
@@ -149,6 +152,9 @@ class _SignInState extends State<SignIn> {
                     if (result != "Signed In"){
                       context.showErrorBar(content: Text(result));
                       return;
+                    } else if (result == "Signed In") {
+                      widget.refreshUI(FirebaseAuth.instance.currentUser!.displayName);
+                      widget.pageController.jumpToPage(0);
                     }
                   },
                 ),
