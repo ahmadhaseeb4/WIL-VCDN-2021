@@ -65,21 +65,27 @@ class _FeedState extends State<Feed> {
     var width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Container(
-        color: AppColor.bgColor,
-        child: loader ? Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),): SmartRefresher(
-          controller: _refreshController,
-          enablePullDown: true,
-          enablePullUp: true,
-          header: WaterDropHeader(),
-          child: posts.length == 0 ? Center(child: const Text("No data available")): ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 50),
-            controller: _scrollController,
-            itemBuilder: (c, i) {
-              return width < 850 ?
-              SizedBox(child: Post(post: posts[i]), height: height,):
-              SizedBox(child: Post(post: posts[i]), height: height * 0.5);
-            },
-            itemCount: posts.length,
+        color: AppColor.bgSideMenu,
+        child: loader ? Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),): Container(
+          decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+            color: AppColor.bgColor,
+          ),
+          child: SmartRefresher(
+            controller: _refreshController,
+            enablePullDown: true,
+            enablePullUp: true,
+            header: WaterDropHeader(),
+            child: posts.length == 0 ? Center(child: const Text("No data available")): ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              controller: _scrollController,
+              itemBuilder: (c, i) {
+                return width < 850 ?
+                SizedBox(child: Post(post: posts[i]), height: height,):
+                SizedBox(child: Post(post: posts[i]), height: height * 0.5);
+              },
+              itemCount: posts.length,
+            ),
           ),
         ),
       ),
@@ -94,7 +100,7 @@ class _FeedState extends State<Feed> {
           title: const Text("Add a new post"),
           content: AddPost(completer: completer, refresh: refreshPostList,),
         );
-      }, child: Icon(Icons.add, color: AppColor.bgColor,), backgroundColor: AppColor.bgSideMenu,),
+      }, child: Icon(Icons.add, color: AppColor.bgColor,), backgroundColor: AppColor.yellow,),
     );
   }
 

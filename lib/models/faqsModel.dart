@@ -1,12 +1,14 @@
 class FAQsModel {
   String _id = "";
+  String _userID = "";
   String _question = "";
   String _answer = "";
   int _helpful = 0;
   int _notHelpful = 0;
 
-  FAQsModel({required String id, required String question, required String answer, required int helpful, required int notHelpful}) {
+  FAQsModel({required String id, required String userID, required String question, required String answer, required int helpful, required int notHelpful}) {
     this._id = id;
+    this._userID = userID;
     this._question = question;
     this._answer = answer;
     this._helpful = helpful;
@@ -15,6 +17,8 @@ class FAQsModel {
 
   String get id => _id;
   set id(String id) => _id = id;
+  String get userID => _userID;
+  set userID(String userID) => _userID = userID;
   String get question => _question;
   set question(String question) => _question = question;
   String get answer => _answer;
@@ -26,6 +30,7 @@ class FAQsModel {
 
   FAQsModel.fromJson(Map<String, dynamic> json) {
     _id = json['id'];
+    _userID = json['userID'];
     _question = json['question'];
     _answer = json['answer'];
     _helpful = json['helpful'];
@@ -35,6 +40,7 @@ class FAQsModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this._id;
+    data['userID'] = this._userID;
     data['question'] = this._question;
     data['answer'] = this._answer;
     data['helpful'] = this._helpful;

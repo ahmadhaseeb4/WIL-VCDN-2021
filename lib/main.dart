@@ -5,14 +5,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pwot/models/faqsModel.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
 import 'package:pwot/pages/dashboard.dart';
 import 'package:pwot/pages/feed.dart';
+import 'package:pwot/pages/help.dart';
+import 'package:pwot/services/faq_services.dart';
 import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:flash/flash.dart';
 import 'package:firebase/firebase.dart' as FB;
 import 'package:pwot/widgets/add-post.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+
 
 import 'models/postModel.dart';
 
@@ -56,6 +62,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   PageController page = PageController();
   List<PostModel> posts = [];
+  List<FAQsModel> faqs = [];
   bool loader = false;
   String? name;
 
@@ -64,12 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       loader = true;
     });
-    FirebaseAuth.instance.authStateChanges().first.then((value) {
-      if (value != null){
-        currentUser = value;
-        setState(() {
-          name = currentUser!.displayName;
-          loader = false;
+    FirebaseAuth.instance.authStateChanges().first.then((value1) {
+      if (value1 != null){
+        FAQServices.extractAllFAQs().then((value2) {
+          currentUser = value1;
+          faqs = value2;
+          print("Total FAQS - ${value2.length}");
+          setState(() {
+            name = currentUser!.displayName;
+            loader = false;
+          });
         });
       } else {
         print("Login error!");
@@ -141,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 page.jumpToPage(0);
               },
-              icon: Icons.supervisor_account,
+              icon: Icons.feed,
             ),
             SideMenuItem(
               priority: 1,
@@ -149,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 page.jumpToPage(1);
               },
-              icon: Icons.home,
+              icon: Icons.dashboard,
             ),
             SideMenuItem(
               priority: 2,
@@ -157,15 +168,15 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () {
                 page.jumpToPage(2);
               },
-              icon: Icons.file_copy_rounded,
+              icon: Icons.message
             ),
             SideMenuItem(
               priority: 3,
-              title: 'Help',
+              title: 'Help Centre',
               onTap: () {
-                page.jumpToPage(3);
+                  page.jumpToPage(3);
               },
-              icon: Icons.file_copy_rounded,
+              icon: Icons.live_help_rounded,
             ),
             currentUser == null ?
             SideMenuItem(
@@ -199,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Feed(posts: posts,),
               Dashboard(),
               Dashboard(),
-              Dashboard(),
+              Help(faqs: faqs,),
               Auth(pageController: page, refreshUI: refreshUI,),
             ],
           ),
@@ -214,5 +225,6 @@ class _MyHomePageState extends State<MyHomePage> {
       name = named;
     });
   }
+
 }
 

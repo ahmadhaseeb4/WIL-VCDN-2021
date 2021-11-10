@@ -147,20 +147,12 @@ class _PostState extends State<Post> {
           }
           StrL1();
           String currentPostID = widget.post.pid;
-          CollectionReference postCollection =
-          FirebaseFirestore.instance.collection('posts');
-          DocumentSnapshot data =
-          await postCollection.doc(currentPostID).get();
+          CollectionReference postCollection = FirebaseFirestore.instance.collection('posts');
 
           //if not liked, like it
-          if (!widget.post.helpfuls.contains(
-              FirebaseAuth.instance.currentUser?.uid)) {
-            widget.post.helpfuls
-                .add(FirebaseAuth.instance.currentUser!.uid);
-            postCollection
-                .doc(currentPostID)
-                .update(widget.post.toJson())
-                .then((value) {
+          if (!widget.post.helpfuls.contains(FirebaseAuth.instance.currentUser?.uid)) {
+            widget.post.helpfuls.add(FirebaseAuth.instance.currentUser!.uid);
+            postCollection.doc(currentPostID).update(widget.post.toJson()).then((value) {
               StpL1();
             });
           } else {
