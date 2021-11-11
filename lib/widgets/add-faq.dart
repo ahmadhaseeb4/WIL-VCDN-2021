@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pwot/models/faqsModel.dart';
@@ -8,7 +10,8 @@ import 'package:flash/flash.dart';
 
 
 class AddFAQ extends StatefulWidget {
-  const AddFAQ({Key? key}) : super(key: key);
+  const AddFAQ({Key? key, required this.completer}) : super(key: key);
+  final Completer completer;
 
   @override
   _AddFAQState createState() => _AddFAQState();
@@ -157,7 +160,7 @@ class _AddFAQState extends State<AddFAQ> {
                     onPressed: () async {
                       if (loader) return;
                       if (FirebaseAuth.instance.currentUser == null) {
-                        context.showErrorBar(content: const Text("Please log in to comment"));
+                        context.showErrorBar(content: const Text("Please log in to add FAQ"));
                         return;
                       }
                       if (questionTextController.text == "" || questionTextController.text.isEmpty){
@@ -199,7 +202,7 @@ class _AddFAQState extends State<AddFAQ> {
                         child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                       ), onPressed: () async {
                     if (loader) return;
-
+                    widget.completer.complete();
                   }),
                 )
               ],

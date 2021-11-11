@@ -62,7 +62,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   PageController page = PageController();
   List<PostModel> posts = [];
-  List<FAQsModel> faqs = [];
   bool loader = false;
   String? name;
 
@@ -73,14 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     FirebaseAuth.instance.authStateChanges().first.then((value1) {
       if (value1 != null){
-        FAQServices.extractAllFAQs().then((value2) {
-          currentUser = value1;
-          faqs = value2;
-          print("Total FAQS - ${value2.length}");
-          setState(() {
-            name = currentUser!.displayName;
-            loader = false;
-          });
+        currentUser = value1;
+        setState(() {
+          name = currentUser!.displayName;
+          loader = false;
         });
       } else {
         print("Login error!");
@@ -210,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Feed(posts: posts,),
               Dashboard(),
               Dashboard(),
-              Help(faqs: faqs,),
+              Help(),
               Auth(pageController: page, refreshUI: refreshUI,),
             ],
           ),

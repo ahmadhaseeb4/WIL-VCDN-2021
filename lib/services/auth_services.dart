@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pwot/models/authDataModel.dart';
 
@@ -28,6 +29,8 @@ class AuthServices {
   static Future<AuthData> SignUp(String email, String password, String displayName) async {
     late AuthData data;
     String message = "nul";
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
+
     User? user;
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -35,6 +38,10 @@ class AuthServices {
           password: password
       );
       user = userCredential.user!;
+      usersRef.doc(user.uid).set({
+        'uid': user.uid,
+        'admin': true
+      });
       await user.updateDisplayName(displayName);
       message = "Signed Up";
     } on FirebaseAuthException catch (e) {
@@ -49,5 +56,16 @@ class AuthServices {
 
     data = AuthData(user: user, message: message);
     return data;
+  }
+  static Future<bool> isAdmin(String id) async {
+    bool result = false;
+    var data;
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
+    await usersRef.doc(id).get().then((value) {
+      data = value.data();
+      result = data!['admin'];
+    });
+
+    return result;
   }
 }

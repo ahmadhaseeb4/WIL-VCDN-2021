@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:accordion/accordion.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pwot/models/faqsModel.dart';
 import 'package:pwot/services/faq_services.dart';
@@ -14,8 +15,7 @@ import 'package:flash/flash.dart';
 
 
 class Help extends StatefulWidget {
-  const Help({Key? key, required this.faqs}) : super(key: key);
-  final List<FAQsModel> faqs;
+  const Help({Key? key,}) : super(key: key);
 
   @override
   _HelpState createState() => _HelpState();
@@ -41,34 +41,33 @@ class _HelpState extends State<Help> {
               headerBackgroundColor: AppColor.bgSideMenu,
               contentBorderColor: AppColor.bgSideMenu,
               isOpen: false,
-              header: Text(widget.faqs[i].question, style: TextStyle(color: Colors.white, fontSize: 17)),
-              content: helperLoader == true ? Container(child: Center(child: CircularProgressIndicator(),), height: 50,): Column(
+              header: Text(value[i].question, style: const TextStyle(color: Colors.white, fontSize: 17)),
+              content: helperLoader == true ? const SizedBox(child: Center(child: CircularProgressIndicator(),), height: 50,): Column(
                 children: [
-                  Text(widget.faqs[i].answer, style: TextStyle(fontWeight: FontWeight.bold),),
-                  SizedBox(height: 10,),
+                  Text(value[i].answer, style: const TextStyle(fontWeight: FontWeight.bold),),
+                  const SizedBox(height: 10,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text("Did you find this answer helpful?"),
-                      SizedBox(width: 5,),
+                      const Text("Did you find this answer helpful?"),
+                      const SizedBox(width: 5,),
                       MaterialButton(
                         onPressed: () async {
                           CollectionReference postCollection = FirebaseFirestore.instance.collection('faqs');
-                          widget.faqs[i].helpful++;
-                          postCollection.doc(widget.faqs[i].id).update(widget.faqs[i].toJson()).then((value) {
+                          value[i].helpful++;
+                          postCollection.doc(value[i].id).update(value[i].toJson()).then((value) {
                             context.showSuccessBar(content: Row(
-                              children: [
+                              children: const [
                                 Text("FAQ marked as - "),
                                 Text("Helpful", style: TextStyle(fontWeight: FontWeight.bold),),
                               ],
                             ));
-                            print("FAQ - (${widget.faqs[i].id}) was marked helpful");
                           });
                         },
                         child: Row(
                           children: [
                             Icon(Icons.thumb_up, color: Colors.green.shade900, size: 16,),
-                            SizedBox(width: 5,),
+                            const SizedBox(width: 5,),
                             Text('Helpful ', style: TextStyle(
                                 color: Colors.green.shade900
                             )
@@ -83,25 +82,24 @@ class _HelpState extends State<Help> {
                             style: BorderStyle.solid
                         ), borderRadius: BorderRadius.circular(5)),
                       ),
-                      SizedBox(width: 5,),
+                      const SizedBox(width: 5,),
                       MaterialButton(
                         onPressed: () async {
                           context.showSuccessBar(content: Row(
-                            children: [
+                            children: const [
                               Text("FAQ marked as - "),
                               Text("Not Helpful", style: TextStyle(fontWeight: FontWeight.bold),),
                             ],
                           ));
                           CollectionReference postCollection = FirebaseFirestore.instance.collection('faqs');
-                          widget.faqs[i].notHelpful++;
-                          postCollection.doc(widget.faqs[i].id).update(widget.faqs[i].toJson()).then((value) {
-                            print("FAQ - (${widget.faqs[i].id}) was marked helpful");
+                          value[i].notHelpful++;
+                          postCollection.doc(value[i].id).update(value[i].toJson()).then((value) {
                           });
                         },
                         child: Row(
                           children: [
                             Icon(Icons.thumb_down, color: Colors.red.shade900, size: 16,),
-                            SizedBox(width: 5,),
+                            const SizedBox(width: 5,),
                             Text('Not Helpful ', style: TextStyle(
                                 color: Colors.red.shade900
                             )
@@ -148,11 +146,11 @@ class _HelpState extends State<Help> {
           ),
           child: loader == true ? Center(child: CircularProgressIndicator(color: AppColor.bgSideMenu,),): Column(
             children: [
-              SizedBox(height: 50,),
-              Text("Frequently Asked Questions.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+              const SizedBox(height: 50,),
+              const Text("Frequently Asked Questions.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
               Accordion(
                 maxOpenSections: 2,
-                leftIcon: Icon(Icons.audiotrack, color: Colors.white),
+                leftIcon: const Icon(Icons.question_answer_outlined, color: Colors.white),
                 children: accordionSection
               ),
             ]
@@ -171,7 +169,7 @@ class _HelpState extends State<Help> {
             margin: EdgeInsets.symmetric(horizontal: width * 0.2),
             persistent: true,
             title: const Text("Add a new FAQ"),
-            content: AddFAQ(),
+            content: AddFAQ(completer: completer,),
           );
         },
       ),
