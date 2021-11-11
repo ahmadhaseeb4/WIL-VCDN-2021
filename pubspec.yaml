@@ -51,6 +51,8 @@ dependencies:
   image_picker_web: ^2.0.3+1
   file_picker: ^4.2.1
   accordion: ^2.1.1
+  youtube_player_iframe: ^2.2.2
+  youtube_player_flutter: ^8.0.0
 
 dev_dependencies:
   flutter_test:
