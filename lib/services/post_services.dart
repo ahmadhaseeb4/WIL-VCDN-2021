@@ -22,6 +22,14 @@ class PostServices {
     return sortedList;
   }
 
+  static Future<List<PostModel>> deletePost(String id) async {
+    List<PostModel> posts = [];
+    CollectionReference postsCR = FirebaseFirestore.instance.collection('posts');
+    await postsCR.doc(id).delete();
+    posts = await retrieveAllPosts();
+    return posts;
+  }
+
   static Future<List<CommentModel>> retrievePostComments(List<String> ids) async {
     List<CommentModel> comments = [];
     await FirebaseFirestore.instance.collection("comments").get().then((value) {

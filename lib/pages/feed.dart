@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:pwot/models/postModel.dart';
+import 'package:pwot/models/userModel.dart';
 import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:pwot/widgets/add-post.dart';
@@ -10,17 +11,18 @@ import 'package:flash/flash.dart';
 
 
 class Feed extends StatefulWidget {
-  const Feed({Key? key, required this.posts}) : super(key: key);
-  final List<PostModel> posts;
+  const Feed({Key? key, required this.data, required this.userModel}) : super(key: key);
+  final List<PostModel> data;
+  final UserModel userModel;
 
   @override
-  _FeedState createState() => _FeedState();
+  _FeedState createState() => _FeedState(posts: data);
 }
 
 class _FeedState extends State<Feed> {
-
+  _FeedState({required this.posts});
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
-  List<PostModel> posts = [];
+  List<PostModel> posts;
   bool loader = false;
   late ScrollController _scrollController;
 
@@ -75,14 +77,14 @@ class _FeedState extends State<Feed> {
             controller: _refreshController,
             enablePullDown: true,
             enablePullUp: true,
-            header: WaterDropHeader(),
-            child: posts.length == 0 ? Center(child: const Text("No data available")): ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 50),
+            header: const WaterDropHeader(),
+            child: posts.isEmpty ? const Center(child: Text("No data available")): ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 50),
               controller: _scrollController,
               itemBuilder: (c, i) {
                 return width < 850 ?
-                SizedBox(child: Post(post: posts[i]), height: height,):
-                SizedBox(child: Post(post: posts[i]), height: height * 0.5);
+                SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: widget.userModel, ), height: height,):
+                SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: widget.userModel,), height: height * 0.5);
               },
               itemCount: posts.length,
             ),
@@ -109,6 +111,12 @@ class _FeedState extends State<Feed> {
     print("Refreshing list...");
     setState(() {
       posts = data;
+    });
+  }
+
+  void updateFeed(List<PostModel> list) {
+    setState(() {
+      posts = list;
     });
   }
 

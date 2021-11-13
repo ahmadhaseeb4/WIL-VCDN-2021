@@ -190,10 +190,15 @@ class _AddPostState extends State<AddPost> {
                               context.showErrorBar(content: const Text("Please select an image."));
                               return;
                             }
+                            setState(() {
+                              loader = true;
+                            });
                             PostImage image = await uploadImage();
-                            print(image.id + " - " + image.url);
                             bool result = await uploadPost(image.url, commentTextController.text);
-                            print(result);
+                            print("Your post uplaod was $result");
+                            setState(() {
+                              loader = false;
+                            });
                             widget.completer.complete();
                             widget.refresh();
                           },

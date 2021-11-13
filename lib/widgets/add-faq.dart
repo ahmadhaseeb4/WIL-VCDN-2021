@@ -10,8 +10,9 @@ import 'package:flash/flash.dart';
 
 
 class AddFAQ extends StatefulWidget {
-  const AddFAQ({Key? key, required this.completer}) : super(key: key);
+  const AddFAQ({Key? key, required this.completer, required this.resetFAQUI}) : super(key: key);
   final Completer completer;
+  final Function resetFAQUI;
 
   @override
   _AddFAQState createState() => _AddFAQState();
@@ -37,7 +38,7 @@ class _AddFAQState extends State<AddFAQ> {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     return Container(
-      child: loader ? Center(child: CircularProgressIndicator(),): Column(
+      child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),): Column(
         children: [
           //question field
           Card(
@@ -179,6 +180,8 @@ class _AddFAQState extends State<AddFAQ> {
                       if (result == true) {
                         questionTextController.clear();
                         answerTextController.clear();
+                        widget.completer.complete();
+                        widget.resetFAQUI();
                         setState(() {
                           loader = false;
                         });

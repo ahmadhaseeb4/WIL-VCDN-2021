@@ -53,6 +53,7 @@ dependencies:
   accordion: ^2.1.1
   youtube_player_iframe: ^2.2.2
   youtube_player_flutter: ^8.0.0
+  flutter_arc_speed_dial: ^2.0.0
 
 dev_dependencies:
   flutter_test:

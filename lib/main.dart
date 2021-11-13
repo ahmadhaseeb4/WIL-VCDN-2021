@@ -7,9 +7,11 @@ import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pwot/models/faqsModel.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
+import 'package:pwot/pages/dash/pages/help.dart';
 import 'package:pwot/pages/dashboard.dart';
 import 'package:pwot/pages/feed.dart';
-import 'package:pwot/pages/help.dart';
+import 'package:pwot/pages/help/help.dart';
+import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/services/faq_services.dart';
 import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
@@ -21,6 +23,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 import 'models/postModel.dart';
+import 'models/userModel.dart';
 
 User? currentUser;
 
@@ -43,10 +46,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'PWOT',
       theme: ThemeData.dark().copyWith(
           textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)),
-      home: MyHomePage(title: 'Playwrite Occupational Therapy'),
+      home: const MyHomePage(title: 'Playwrite Occupational Therapy'),
     );
   }
 }
@@ -60,6 +63,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  UserModel userModel = UserModel(uid: "null", admin: false);
   PageController page = PageController();
   List<PostModel> posts = [];
   bool loader = false;
@@ -70,12 +74,25 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       loader = true;
     });
-    FirebaseAuth.instance.authStateChanges().first.then((value1) {
-      if (value1 != null){
-        currentUser = value1;
-        setState(() {
-          name = currentUser!.displayName;
-          loader = false;
+    FirebaseAuth.instance.authStateChanges().first.then((value1) async {
+      if (value1 != null) {
+        await AuthServices.IsUserAdmin(value1.uid).then((value) {
+          print("This user is admin - (${value.admin})");
+          if (value.admin == true) {
+            userModel = UserModel(uid: value.uid, admin: value.admin);
+            currentUser = value1;
+            setState(() {
+              name = currentUser!.displayName;
+              loader = false;
+            });
+          } else {
+            userModel = UserModel(uid: value.uid, admin: value.admin);
+            currentUser = value1;
+            setState(() {
+              name = currentUser!.displayName;
+              loader = false;
+            });
+          }
         });
       } else {
         print("Login error!");
@@ -188,6 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 await FirebaseAuth.instance.signOut().then((value) {
                   currentUser = null;
                   setState(() {
+                    userModel = UserModel(uid: "null", admin: false);
                     name = "";
                   });
                   page.jumpToPage(0);
@@ -202,10 +220,10 @@ class _MyHomePageState extends State<MyHomePage> {
             physics: const NeverScrollableScrollPhysics(),
             controller: page,
             children: [
-              Feed(posts: posts,),
-              Dashboard(),
-              Dashboard(),
-              Help(),
+              Feed(data: posts, userModel: userModel, ),
+              Messages(),
+              Messages(),
+              Help(userModel: userModel,),
               Auth(pageController: page, refreshUI: refreshUI,),
             ],
           ),

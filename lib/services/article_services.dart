@@ -25,7 +25,6 @@ class ArticleServices {
     List<ArticleModel> result = [];
     await FirebaseFirestore.instance.collection("articles").get().then((value) {
       value.docs.forEach((element) {
-        print(element.data());
         ArticleModel article = ArticleModel.fromJson(element.data());
         article.id = element.id;
         result.add(article);
@@ -39,4 +38,13 @@ class ArticleServices {
     });
     return sortedList;
   }
+
+  static Future<List<ArticleModel>> deleteArticle(String id) async {
+    List<ArticleModel> articles = [];
+    CollectionReference articlesCR = FirebaseFirestore.instance.collection('articles');
+    await articlesCR.doc(id).delete();
+    articles = await extractAllArticles();
+    return articles;
+  }
+
 }

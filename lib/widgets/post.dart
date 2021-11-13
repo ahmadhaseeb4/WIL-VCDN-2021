@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:octo_image/octo_image.dart';
 import 'package:pwot/models/commentModel.dart';
 import 'package:pwot/models/postModel.dart';
+import 'package:pwot/models/userModel.dart';
 import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:pwot/widgets/comment.dart';
@@ -12,8 +15,10 @@ import 'package:readmore/readmore.dart';
 import 'package:flash/flash.dart';
 
 class Post extends StatefulWidget {
-  const Post({Key? key, required this.post}) : super(key: key);
+  const Post({Key? key, required this.post, required this.updateFeed, required this.userModel}) : super(key: key);
   final PostModel post;
+  final Function updateFeed;
+  final UserModel userModel;
 
   @override
   _PostState createState() => _PostState();
@@ -193,12 +198,40 @@ class _PostState extends State<Post> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.supervised_user_circle,
-                    color: AppColor.bgSideMenu,
+                  Expanded(
+                    child: Icon(
+                      Icons.supervised_user_circle,
+                      color: AppColor.bgSideMenu,
+                    ),
                   ),
-                  Text(widget.post.username,
-                      style: TextStyle(color: AppColor.bgSideMenu)),
+                  Expanded(
+                    flex: 16,
+                      child: Text(widget.post.username,
+                          style: TextStyle(color: AppColor.bgSideMenu))
+                  ),
+                  Expanded(
+                      child: FirebaseAuth.instance.currentUser?.uid == widget.post.uid ? InkWell(
+                          child: Icon(Icons.delete,
+                            color: Colors.red.shade900,
+                          ),
+                        onTap: () async {
+                            StrL1();
+                            List<PostModel> data = await PostServices.deletePost(widget.post.pid);
+                            StpL1();
+                            widget.updateFeed(data);
+                        },
+                      ): widget.userModel.admin ? InkWell(
+                        child: Icon(Icons.delete,
+                          color: Colors.red.shade900,
+                        ),
+                        onTap: () async {
+                          StrL1();
+                          List<PostModel> data = await PostServices.deletePost(widget.post.pid);
+                          StpL1();
+                          widget.updateFeed(data);
+                        },
+                      ): Container(),
+                  )
                 ],
               ),
               const SizedBox(
@@ -274,15 +307,18 @@ class _PostState extends State<Post> {
           PostModel post = await PostServices.extractPostInfo(widget.post.pid);
           List<CommentModel> comments = await PostServices.retrievePostComments(post.comments);
           StpL1();
+          Completer completer = Completer();
           //once comments have been found, show comment dialog
           context.showFlashDialog(
+            barrierDismissible: false,
+            dismissCompleter: completer,
               margin: EdgeInsets.symmetric(
                 horizontal: width * 0.2,
               ),
               backgroundColor: AppColor.bgColor,
               persistent: true,
               title: const Text('Comments'),
-              content: CommentView(post: widget.post, comments: comments,)
+              content: CommentView(post: widget.post, comments: comments, completer: completer,)
           );}
       ),
     );
@@ -303,9 +339,10 @@ class _PostState extends State<Post> {
 
 //this is the home widget that gets attached to the flash dialog above
 class CommentView extends StatefulWidget {
-  const CommentView({Key? key, required this.comments, required this.post}) : super(key: key);
+  const CommentView({Key? key, required this.comments, required this.post, required this.completer}) : super(key: key);
   final List<CommentModel> comments;
   final PostModel post;
+  final Completer completer;
 
   @override
   _CommentViewState createState() => _CommentViewState();
@@ -340,7 +377,8 @@ class _CommentViewState extends State<CommentView> {
           children: [
           SizedBox(
           height: height * 0.5,
-            child: loader ? Center(child: CircularProgressIndicator(),):ListView.builder(
+            child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),):
+            comments.isEmpty ? const Center(child: Text("No data available"),): ListView.builder(
               itemBuilder: (_, int i){
                 return Card(
                   elevation: 2.0,
@@ -362,13 +400,13 @@ class _CommentViewState extends State<CommentView> {
                                     setState(() {
                                       loader = true;
                                     });
-                                    bool result = await PostServices.deleteComment(postID: widget.post.pid, commentID: widget.comments[i].cid);
+                                    bool result = await PostServices.deleteComment(postID: widget.post.pid, commentID: comments[i].cid);
                                     //reset list & clear the field is comment was successful
                                     if (result == true) {
                                       PostModel post = await PostServices.extractPostInfo(widget.post.pid);
                                       List<CommentModel> newComments =  await PostServices.retrievePostComments(post.comments);
-                                      comments = newComments;
                                       setState(() {
+                                        comments = newComments;
                                         loader = false;
                                       });
                                     }
@@ -420,7 +458,7 @@ class _CommentViewState extends State<CommentView> {
                         color: AppColor.bgSideMenu,
                         size: 22.0,
                       ),
-                      hintText: 'Enter your post here...',
+                      hintText: 'Enter your comment here...',
                       hintStyle: TextStyle(color: AppColor.bgSideMenu),
                     ),
                     onSubmitted: (_) {
@@ -511,7 +549,7 @@ class _CommentViewState extends State<CommentView> {
                   child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                 ), onPressed: () async {
                   if (loader) return;
-
+                  widget.completer.complete();
                 }),
               )
             ],

@@ -26,7 +26,6 @@ class VideoServices {
     List<VideoModel> result = [];
     await FirebaseFirestore.instance.collection("videos").get().then((value) {
       value.docs.forEach((element) {
-        print(element.data());
         VideoModel article = VideoModel.fromJson(element.data());
         article.id = element.id;
         result.add(article);

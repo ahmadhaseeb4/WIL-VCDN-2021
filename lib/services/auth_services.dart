@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pwot/models/authDataModel.dart';
+import 'package:pwot/models/userModel.dart';
 
 class AuthServices {
   static Future<AuthData> SignIn(String email, String password) async {
@@ -26,6 +27,7 @@ class AuthServices {
     data = AuthData(user: user, message: message);
     return data;
   }
+
   static Future<AuthData> SignUp(String email, String password, String displayName) async {
     late AuthData data;
     String message = "nul";
@@ -57,15 +59,29 @@ class AuthServices {
     data = AuthData(user: user, message: message);
     return data;
   }
-  static Future<bool> isAdmin(String id) async {
-    bool result = false;
-    var data;
-    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
-    await usersRef.doc(id).get().then((value) {
-      data = value.data();
-      result = data!['admin'];
+
+
+  static Future<UserModel> IsUserAdmin(String id) async {
+    List<UserModel> users = [];
+    UserModel user;
+    await FirebaseFirestore.instance.collection("users").get().then((value) {
+      value.docs.forEach((element) {
+        UserModel userModel = UserModel.fromJson(element.data());
+        print(element.data());
+        userModel.uid = element.id;
+        users.add(userModel);
+      });
     });
 
-    return result;
+    user = UserModel(uid: id, admin: false);
+    if (users.isNotEmpty) {
+      users.forEach((element) {
+        if (element.uid == id && element.admin == true) {
+          user = UserModel(uid: id, admin: true);
+        }
+      });
+    }
+
+    return user;
   }
 }

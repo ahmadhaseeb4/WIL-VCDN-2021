@@ -12,9 +12,9 @@ import 'package:flash/flash.dart';
 
 
 class AddArticle extends StatefulWidget {
-  const AddArticle({Key? key, required this.completer, required this.resetUI}) : super(key: key);
+  const AddArticle({Key? key, required this.completer, required this.resetArticleUI}) : super(key: key);
   final Completer completer;
-  final Function resetUI;
+  final Function resetArticleUI;
 
   @override
   _AddArticleState createState() => _AddArticleState();
@@ -41,8 +41,8 @@ class _AddArticleState extends State<AddArticle> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    return Container(
-      child: loader ? Center(child: CircularProgressIndicator(),): Column(
+    return loader ? const Center(child: CircularProgressIndicator(),): SingleChildScrollView(
+      child: Column(
         children: [
           //question field
           Card(
@@ -76,7 +76,7 @@ class _AddArticleState extends State<AddArticle> {
                       },
                       minLines: 1,
                       maxLines: 3,
-                      maxLength: 256,
+                      maxLength: 48,
                       enabled: loader ? false: true,
                     ),
                   ),
@@ -126,7 +126,7 @@ class _AddArticleState extends State<AddArticle> {
                       },
                       minLines: 1,
                       maxLines: 3,
-                      maxLength: 256,
+                      maxLength: 48,
                       enabled: loader ? false: true,
                     ),
                   ),
@@ -234,15 +234,7 @@ class _AddArticleState extends State<AddArticle> {
                         loader = true;
                       });
                       bool result = await ArticleServices.addArticle(titleTextController.text, descriptionTextController.text, urlTextController.text);
-                      ArticleModel articleModel = ArticleModel(
-                          id: "",
-                          userID: FirebaseAuth.instance.currentUser!.uid,
-                          articleTitle: titleTextController.text,
-                          articleDescription: descriptionTextController.text,
-                          link: urlTextController.text,
-                          date: DateTime.now().toIso8601String()
-                      );
-                      widget.resetUI(articleModel);
+                      widget.resetArticleUI();
                       //reset list & clear the field is comment was successful
                       if (result == true) {
                         titleTextController.clear();
