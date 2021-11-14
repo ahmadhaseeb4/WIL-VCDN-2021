@@ -176,6 +176,7 @@ class _AddFAQState extends State<AddFAQ> {
                         loader = true;
                       });
                       bool result = await FAQServices.addFAQ(questionTextController.text, answerTextController.text);
+                      widget.resetFAQUI();
                       //reset list & clear the field is comment was successful
                       if (result == true) {
                         questionTextController.clear();

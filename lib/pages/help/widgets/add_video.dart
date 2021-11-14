@@ -30,7 +30,7 @@ class _AddVideoState extends State<AddVideo> {
   final FocusNode descriptionFocusNode = FocusNode();
   final FocusNode urlFocusNode = FocusNode();
   bool loader = false;
-  List<ArticleModel> articles = [];
+  List<VideoModel> videos = [];
 
   @override
   void dispose() {
@@ -43,8 +43,8 @@ class _AddVideoState extends State<AddVideo> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    return Container(
-      child: loader ? Center(child: CircularProgressIndicator(),): Column(
+    return loader ? const Center(child: CircularProgressIndicator(),): SingleChildScrollView(
+      child: Column(
         children: [
           //question field
           Card(
@@ -70,7 +70,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter video title here...',
+                        hintText: 'Enter article title here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {
@@ -78,7 +78,7 @@ class _AddVideoState extends State<AddVideo> {
                       },
                       minLines: 1,
                       maxLines: 3,
-                      maxLength: 256,
+                      maxLength: 48,
                       enabled: loader ? false: true,
                     ),
                   ),
@@ -120,7 +120,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter video description here...',
+                        hintText: 'Enter article description here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {
@@ -128,7 +128,7 @@ class _AddVideoState extends State<AddVideo> {
                       },
                       minLines: 1,
                       maxLines: 3,
-                      maxLength: 256,
+                      maxLength: 48,
                       enabled: loader ? false: true,
                     ),
                   ),
@@ -170,7 +170,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter video URL here...',
+                        hintText: 'Enter article URL here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {
@@ -221,11 +221,11 @@ class _AddVideoState extends State<AddVideo> {
                         return;
                       }
                       if (titleTextController.text == "" || titleTextController.text.isEmpty){
-                        context.showErrorBar(content: const Text("Title can not be empty"));
+                        context.showErrorBar(content: const Text("Video title can not be empty"));
                         return;
                       }
                       if (descriptionTextController.text == "" || descriptionTextController.text.isEmpty){
-                        context.showErrorBar(content: const Text("Description can not be empty"));
+                        context.showErrorBar(content: const Text("Video description can not be empty"));
                         return;
                       }
                       if (urlTextController.text == "" || urlTextController.text.isEmpty){
@@ -236,15 +236,7 @@ class _AddVideoState extends State<AddVideo> {
                         loader = true;
                       });
                       bool result = await VideoServices.addVideo(titleTextController.text, descriptionTextController.text, urlTextController.text);
-                      VideoModel videoModel = VideoModel(
-                          id: "",
-                          userID: FirebaseAuth.instance.currentUser!.uid,
-                          videoTitle: titleTextController.text,
-                          videoDescription: descriptionTextController.text,
-                          link: urlTextController.text,
-                          date: DateTime.now().toIso8601String()
-                      );
-                      widget.resetVideoUI(videoModel);
+                      widget.resetVideoUI();
                       //reset list & clear the field is comment was successful
                       if (result == true) {
                         titleTextController.clear();

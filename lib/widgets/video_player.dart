@@ -53,14 +53,14 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                 Expanded(
                     child: Container(
                       height: double.infinity,
-                      margin: EdgeInsets.symmetric(vertical: 5),
+                      margin: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(
                           borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                           color: Colors.red.shade900
                       ),
                       child: MaterialButton(
                         highlightColor: Colors.transparent,
-                        child: Text("Close"),
+                        child: const Text("Close"),
                         onPressed: () {
                           widget.completer.complete();
                         },

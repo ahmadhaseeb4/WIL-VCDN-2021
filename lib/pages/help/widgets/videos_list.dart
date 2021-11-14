@@ -1,34 +1,43 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'dart:html' as HTML;
-
-import 'package:pwot/models/articleModel.dart';
-import 'package:pwot/services/article_services.dart';
+import 'package:pwot/models/videoModel.dart';
+import 'package:pwot/services/video_services.dart';
 import 'package:pwot/utility/app_colors.dart';
+import 'dart:html' as HTML;
+import 'package:flash/flash.dart';
+import 'package:pwot/widgets/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 
-class ArticlesList extends StatefulWidget {
-  const ArticlesList({Key? key, required this.extractedArticles, required this.resetArticlesUI}) : super(key: key);
-  final List<ArticleModel> extractedArticles;
-  final Function resetArticlesUI;
+
+class VideoList extends StatefulWidget {
+  const VideoList({Key? key, required this.extractedVideos, required this.resetVideosUI}) : super(key: key);
+  final List<VideoModel> extractedVideos;
+  final Function resetVideosUI;
+
   @override
-  _ArticlesListState createState() => _ArticlesListState();
+  _VideoListState createState() => _VideoListState();
 }
 
-class _ArticlesListState extends State<ArticlesList> {
-  List<ArticleModel> extractedArticles = [];
-  final ScrollController _scrollController1 = ScrollController();
-  bool articleLoader = false;
+class _VideoListState extends State<VideoList> {
+  List<VideoModel> extractedVideos = [];
+  final ScrollController _scrollController = ScrollController();
+  bool loader = false;
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+
     return Column(
       children: [
         Expanded(
-          child: articleLoader
+          child: loader
               ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),)
               : ListView.builder(
-            controller: _scrollController1,
+            controller: _scrollController,
             itemBuilder: (_, i) {
               return Card(
                   elevation: 2,
@@ -47,7 +56,7 @@ class _ArticlesListState extends State<ArticlesList> {
                                 children: [
                                   Expanded(
                                     child: AutoSizeText(
-                                        widget.extractedArticles[i].articleTitle,
+                                      widget.extractedVideos[i].videoTitle,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                       maxLines: 1,
                                     ),
@@ -61,15 +70,15 @@ class _ArticlesListState extends State<ArticlesList> {
                                       ),
                                       onTap: () async {
                                         setState(() {
-                                          articleLoader = true;
+                                          loader = true;
                                         });
-                                        List<ArticleModel> data = await ArticleServices.deleteArticle(widget.extractedArticles[i].id);
-                                        widget.extractedArticles.clear();
+                                        List<VideoModel> data = await VideoServices.deleteArticle(widget.extractedVideos[i].id);
+                                        widget.extractedVideos.clear();
                                         data.forEach((element) {
-                                          widget.extractedArticles.add(element);
+                                          widget.extractedVideos.add(element);
                                         });
                                         setState(() {
-                                          articleLoader = false;
+                                          loader = false;
                                         });
                                       },
                                     ),
@@ -80,8 +89,7 @@ class _ArticlesListState extends State<ArticlesList> {
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0, vertical: 4),
-                              child: FittedBox(child: Text(
-                                  widget.extractedArticles[i].articleDescription)),
+                              child: FittedBox(child: Text(widget.extractedVideos[i].videoDescription)),
                             )
                           ],
                         ),
@@ -89,27 +97,56 @@ class _ArticlesListState extends State<ArticlesList> {
                       Expanded(
                         child: MaterialButton(
                           onPressed: () {
-                            HTML.window.open(widget.extractedArticles[i].link,
-                                widget.extractedArticles[i].articleTitle);
+                            String id = "";
+                            id = extractIDFromVideo(link: widget.extractedVideos[i].link);
+                            Completer completer = Completer();
+                            context.showFlashDialog(
+                              dismissCompleter: completer,
+                              barrierDismissible: false,
+                              backgroundColor: AppColor.bgColor,
+                              margin: EdgeInsets.symmetric(horizontal: width * 0.2),
+                              persistent: true,
+                              title: Text(widget.extractedVideos[i].videoTitle),
+                              content: CustomVideoPlayer(
+                                link: id,
+                                completer: completer,
+                              ),
+                            );
                           },
                           child: Column(
                             children: [
-                              const Icon(Icons.menu_book_outlined),
-                              Text("Read",
+                              const Icon(Icons.play_arrow),
+                              Text("Play",
                                 style: TextStyle(color: AppColor.bgColor),),
                             ],
                           ),
-                          color: AppColor.yellow,
+                          color: Colors.greenAccent.shade700,
                           padding: const EdgeInsets.symmetric(vertical: 30),
                         ),
                       )
                     ],
                   )
               );
-            }, itemCount: widget.extractedArticles.length,),
+            }, itemCount: widget.extractedVideos.length,),
         )
       ],
     );
   }
 
+  String extractIDFromVideo({required String link}) {
+    String? id = "";
+    try {
+      id = YoutubePlayer.convertUrlToId(link);
+      print('this is ' + id!);
+    } on Exception catch (exception) {
+      // only executed if error is of type Exception
+      print('exception');
+    } catch (error) {
+      // executed for errors of all types other than Exception
+      print('catch error');
+      //  videoIdd="error";
+
+    }
+    return id!;
+  }
 }

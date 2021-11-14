@@ -4,6 +4,7 @@ import 'package:pwot/models/articleModel.dart';
 import 'package:pwot/models/videoModel.dart';
 
 class VideoServices {
+
   static Future<bool> addVideo(String articleTitle, String articleDescription, String link) async {
     bool result = false;
     CollectionReference articlesCollection = FirebaseFirestore.instance.collection('videos');
@@ -38,5 +39,13 @@ class VideoServices {
       sortedList.add(element);
     });
     return sortedList;
+  }
+
+  static Future<List<VideoModel>> deleteArticle(String id) async {
+    List<VideoModel> videos = [];
+    CollectionReference videosCR = FirebaseFirestore.instance.collection('videos');
+    await videosCR.doc(id).delete();
+    videos = await extractAllVideos();
+    return videos;
   }
 }

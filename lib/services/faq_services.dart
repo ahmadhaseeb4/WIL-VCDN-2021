@@ -33,4 +33,12 @@ class FAQServices {
     });
     return faqs;
   }
+
+  static Future<List<FAQsModel>> deleteFAQ(String id) async {
+    List<FAQsModel> faqs = [];
+    CollectionReference faqCR = FirebaseFirestore.instance.collection('faqs');
+    await faqCR.doc(id).delete();
+    faqs = await extractAllFAQs();
+    return faqs;
+  }
 }
