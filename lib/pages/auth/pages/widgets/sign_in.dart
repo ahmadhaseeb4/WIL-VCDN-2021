@@ -140,11 +140,11 @@ class _SignInState extends State<SignIn> {
                   ),
                   onPressed: () async {
                     if (loginEmailController.text == "" || loginEmailController.text.isEmpty){
-                      context.showErrorBar(content: Text("Email can not be empty"));
+                      context.showErrorBar(content: const Text("Email can not be empty"));
                       return;
                     }
                     if (loginPasswordController.text == "" || loginPasswordController.text.isEmpty){
-                      context.showErrorBar(content: Text("Password can not be empty"));
+                      context.showErrorBar(content: const Text("Password can not be empty"));
                       return;
                     }
                     StartLoader();

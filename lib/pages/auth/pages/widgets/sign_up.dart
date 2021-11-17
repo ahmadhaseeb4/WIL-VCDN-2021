@@ -136,7 +136,7 @@ class _SignUpState extends State<SignUp> {
                             hintText: 'Password',
                             hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
-                              onTap: _toggleSignup,
+                              onTap: _toggleSignup1,
                               child: Icon(
                                 _obscureTextPassword
                                     ? FontAwesomeIcons.eye
@@ -147,7 +147,7 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignUpButton();
+                            //_toggleSignUpButton();
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -175,9 +175,9 @@ class _SignUpState extends State<SignUp> {
                             hintText: 'Confirm Password',
                             hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
-                              onTap: _toggleSignup,
+                              onTap: _toggleSignup2,
                               child: Icon(
-                                _obscureTextPassword
+                                _obscureTextConfirmPassword
                                     ? FontAwesomeIcons.eye
                                     : FontAwesomeIcons.eyeSlash,
                                 size: 15.0,
@@ -186,7 +186,7 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignUpButton();
+                            //_toggleSignUpButton();
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -284,9 +284,14 @@ class _SignUpState extends State<SignUp> {
     CustomSnackBar(context, const Text('SignUp button pressed'));
   }
 
-  void _toggleSignup() {
+  void _toggleSignup1() {
     setState(() {
       _obscureTextPassword = !_obscureTextPassword;
+    });
+  }
+  void _toggleSignup2() {
+    setState(() {
+      _obscureTextConfirmPassword = !_obscureTextConfirmPassword;
     });
   }
 
