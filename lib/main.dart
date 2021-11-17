@@ -168,11 +168,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SideMenuItem(
               priority: 1,
-              title: 'Dashboard',
+              title: 'Contact Us',
               onTap: () {
                 page.jumpToPage(1);
               },
-              icon: Icons.dashboard,
+              icon: Icons.quick_contacts_dialer_sharp,
             ),
             SideMenuItem(
               priority: 2,
@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     userModel = UserModel(uid: "null", admin: false);
                     name = "";
                   });
-                  page.jumpToPage(0);
+                  page.jumpToPage(4);
                 });
               },
               icon: Icons.cancel,
@@ -220,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
             physics: const NeverScrollableScrollPhysics(),
             controller: page,
             children: [
-              Feed(data: posts, userModel: userModel, ),
+              Feed(data: posts,),
               Messages(),
               Messages(),
               Help(userModel: userModel,),
