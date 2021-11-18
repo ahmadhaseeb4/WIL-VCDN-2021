@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pwot/models/userModel.dart';
 import 'package:pwot/models/videoModel.dart';
+import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/services/video_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'dart:html' as HTML;
@@ -25,6 +28,23 @@ class _VideoListState extends State<VideoList> {
   List<VideoModel> extractedVideos = [];
   final ScrollController _scrollController = ScrollController();
   bool loader = false;
+  UserModel? user;
+
+  @override
+  void initState() {
+    super.initState();
+    if (FirebaseAuth.instance.currentUser != null) {
+      setState(() {
+        loader = true;
+      });
+      AuthServices.getUserModel(FirebaseAuth.instance.currentUser!.uid).then((value) {
+        user = value;
+        setState(() {
+          loader = false;
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +82,7 @@ class _VideoListState extends State<VideoList> {
                                     ),
                                     flex: 10,
                                   ),
+                                  if (user != null && user!.admin)
                                   Expanded(
                                     child: InkWell(
                                       child: Icon(
