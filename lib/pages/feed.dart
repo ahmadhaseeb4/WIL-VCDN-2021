@@ -34,11 +34,11 @@ class _FeedState extends State<Feed> {
       loader = true;
     });
     if (FirebaseAuth.instance.currentUser != null) {
-      AuthServices.IsUserAdmin(FirebaseAuth.instance.currentUser!.uid).then((value) {
+      AuthServices.getUserModel(FirebaseAuth.instance.currentUser!.uid).then((value) {
         userModel = value;
       });
     } else {
-      userModel = UserModel(uid: "null", admin: false);
+      userModel = UserModel(uid: "null", admin: false, contact: "Not available");
     }
     scrollControllerInitial_init();
     postRetrieval_init();
@@ -85,21 +85,15 @@ class _FeedState extends State<Feed> {
               borderRadius: const BorderRadius.all(Radius.circular(10)),
             color: AppColor.bgColor,
           ),
-          child: SmartRefresher(
-            controller: _refreshController,
-            enablePullDown: true,
-            enablePullUp: true,
-            header: const WaterDropHeader(),
-            child: posts.isEmpty ? const Center(child: Text("No data available")): ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              controller: _scrollController,
-              itemBuilder: (c, i) {
-                return width < 850 ?
-                SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: userModel, ), height: height,):
-                SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: userModel,), height: height * 0.5);
-              },
-              itemCount: posts.length,
-            ),
+          child: posts.isEmpty ? const Center(child: Text("No data available")): ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            controller: _scrollController,
+            itemBuilder: (c, i) {
+              return width < 850 ?
+              SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: userModel, ), height: height,):
+              SizedBox(child: Post(post: posts[i], updateFeed: updateFeed, userModel: userModel,), height: height * 0.5);
+            },
+            itemCount: posts.length,
           ),
         ),
       ),

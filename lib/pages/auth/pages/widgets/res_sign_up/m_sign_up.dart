@@ -1,25 +1,25 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwot/models/authDataModel.dart';
-import 'package:pwot/pages/auth/widgets/snackbar.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:flash/flash.dart';
 
-
-class ScreenTwo extends StatefulWidget {
-  const ScreenTwo({Key? key,}) : super(key: key);
+class MobileSignUp extends StatefulWidget {
+  const MobileSignUp({Key? key, required this.pageController, required this.refreshUI}) : super(key: key);
+  final PageController pageController;
+  final Function refreshUI;
 
   @override
-  _ScreenTwoState createState() => _ScreenTwoState();
+  _MobileSignUpState createState() => _MobileSignUpState();
 }
 
-class _ScreenTwoState extends State<ScreenTwo> {
+class _MobileSignUpState extends State<MobileSignUp> {
   final FocusNode focusNodePassword = FocusNode();
   final FocusNode focusNodeConfirmPassword = FocusNode();
   final FocusNode focusNodeEmail = FocusNode();
   final FocusNode focusNodeName = FocusNode();
+  final FocusNode focusNodeContact = FocusNode();
 
   bool _obscureTextPassword = true;
   bool _obscureTextConfirmPassword = true;
@@ -28,6 +28,7 @@ class _ScreenTwoState extends State<ScreenTwo> {
   TextEditingController signupNameController = TextEditingController();
   TextEditingController signupPasswordController = TextEditingController();
   TextEditingController signupConfirmPasswordController = TextEditingController();
+  TextEditingController signupContactController = TextEditingController();
 
   bool loader = false;
 
@@ -42,8 +43,6 @@ class _ScreenTwoState extends State<ScreenTwo> {
 
   @override
   Widget build(BuildContext context) {
-    var height = MediaQuery.of(context).size.height;
-    var width = MediaQuery.of(context).size.width;
     return Container(
       padding: const EdgeInsets.only(top: 23.0),
       child: Column(
@@ -136,7 +135,7 @@ class _ScreenTwoState extends State<ScreenTwo> {
                             hintText: 'Password',
                             hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
-                              onTap: _toggleSignup,
+                              onTap: _toggleSignup1,
                               child: Icon(
                                 _obscureTextPassword
                                     ? FontAwesomeIcons.eye
@@ -147,7 +146,7 @@ class _ScreenTwoState extends State<ScreenTwo> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignUpButton();
+                            //_toggleSignUpButton();
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -175,9 +174,9 @@ class _ScreenTwoState extends State<ScreenTwo> {
                             hintText: 'Confirm Password',
                             hintStyle: TextStyle(color: AppColor.bgSideMenu),
                             suffixIcon: GestureDetector(
-                              onTap: _toggleSignup,
+                              onTap: _toggleSignup2,
                               child: Icon(
-                                _obscureTextPassword
+                                _obscureTextConfirmPassword
                                     ? FontAwesomeIcons.eye
                                     : FontAwesomeIcons.eyeSlash,
                                 size: 15.0,
@@ -186,7 +185,7 @@ class _ScreenTwoState extends State<ScreenTwo> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignUpButton();
+                            //_toggleSignUpButton();
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -234,16 +233,20 @@ class _ScreenTwoState extends State<ScreenTwo> {
                       context.showErrorBar(content: const Text("Password and Confirm Password do not match."));
                       return;
                     }
-                    // StartLoader();
-                    // AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text);
-                    // StopLoader();
-                    // if (result.message != "Signed Up"){
-                    //   context.showErrorBar(content: Text(result.message));
-                    //   return;
-                    // } else if (result.message == "Signed Up") {
-                    //   // widget.refreshUI(result.user, signupNameController.text);
-                    //   // widget.pageController.jumpToPage(0);
-                    // }
+                    if (signupContactController.text.isEmpty){
+                      context.showErrorBar(content: const Text("Contact number can not be empty."));
+                      return;
+                    }
+                    StartLoader();
+                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text, signupContactController.text);
+                    StopLoader();
+                    if (result.message != "Signed Up"){
+                      context.showErrorBar(content: Text(result.message));
+                      return;
+                    } else if (result.message == "Signed Up") {
+                      widget.refreshUI(result.user, signupNameController.text);
+                      widget.pageController.jumpToPage(0);
+                    }
                   },
                 ),
               )
@@ -280,13 +283,14 @@ class _ScreenTwoState extends State<ScreenTwo> {
     });
   }
 
-  void _toggleSignUpButton() {
-    CustomSnackBar(context, const Text('SignUp button pressed'));
-  }
-
-  void _toggleSignup() {
+  void _toggleSignup1() {
     setState(() {
       _obscureTextPassword = !_obscureTextPassword;
+    });
+  }
+  void _toggleSignup2() {
+    setState(() {
+      _obscureTextConfirmPassword = !_obscureTextConfirmPassword;
     });
   }
 

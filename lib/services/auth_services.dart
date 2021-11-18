@@ -28,9 +28,9 @@ class AuthServices {
     return data;
   }
 
-  static Future<AuthData> SignUp(String email, String password, String displayName) async {
+  static Future<AuthData> SignUp(String email, String password, String displayName, String contact) async {
     late AuthData data;
-    String message = "nul";
+    String message = "null";
     CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
 
     User? user;
@@ -42,7 +42,8 @@ class AuthServices {
       user = userCredential.user!;
       usersRef.doc(user.uid).set({
         'uid': user.uid,
-        'admin': true
+        'admin': true,
+        'contact': contact
       });
       await user.updateDisplayName(displayName);
       message = "Signed Up";
@@ -61,27 +62,27 @@ class AuthServices {
   }
 
 
-  static Future<UserModel> IsUserAdmin(String id) async {
+  static Future<UserModel> getUserModel(String id) async {
     List<UserModel> users = [];
     UserModel user;
     await FirebaseFirestore.instance.collection("users").get().then((value) {
       value.docs.forEach((element) {
         UserModel userModel = UserModel.fromJson(element.data());
-        print(element.data());
         userModel.uid = element.id;
         users.add(userModel);
       });
     });
 
-    user = UserModel(uid: id, admin: false);
+    user = UserModel(uid: id, admin: false, contact: "Not available");
     if (users.isNotEmpty) {
       users.forEach((element) {
         if (element.uid == id && element.admin == true) {
-          user = UserModel(uid: id, admin: true);
+          user = element;
         }
       });
     }
 
+    print(FirebaseAuth.instance.currentUser!.displayName);
     return user;
   }
 }

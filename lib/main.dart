@@ -1,25 +1,17 @@
-import 'dart:async';
-import 'dart:html' as HTML;
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pwot/models/faqsModel.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
-import 'package:pwot/pages/dash/pages/help.dart';
 import 'package:pwot/pages/feed.dart';
 import 'package:pwot/pages/help/help.dart';
 import 'package:pwot/pages/messages/messages.dart';
+import 'package:pwot/profile/profile.dart';
 import 'package:pwot/services/auth_services.dart';
-import 'package:pwot/services/faq_services.dart';
-import 'package:pwot/services/post_services.dart';
 import 'package:pwot/utility/app_colors.dart';
-import 'package:flash/flash.dart';
-import 'package:firebase/firebase.dart' as FB;
-import 'package:pwot/widgets/add-post.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 
 
 import 'models/postModel.dart';
@@ -63,7 +55,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  UserModel userModel = UserModel(uid: "null", admin: false);
+  UserModel userModel = UserModel(uid: "null", admin: false, contact: "Not Available");
   PageController page = PageController();
   List<PostModel> posts = [];
   bool loader = false;
@@ -76,17 +68,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     FirebaseAuth.instance.authStateChanges().first.then((value1) async {
       if (value1 != null) {
-        await AuthServices.IsUserAdmin(value1.uid).then((value) {
-          print("This user is admin - (${value.admin})");
+        await AuthServices.getUserModel(value1.uid).then((value) {
           if (value.admin == true) {
-            userModel = UserModel(uid: value.uid, admin: value.admin);
+            userModel = value;
             currentUser = value1;
             setState(() {
               name = currentUser!.displayName;
               loader = false;
             });
           } else {
-            userModel = UserModel(uid: value.uid, admin: value.admin);
+            userModel = value;
             currentUser = value1;
             setState(() {
               name = currentUser!.displayName;
@@ -147,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   child: Icon(Icons.image)
               ),
-              Divider(
+              const Divider(
                 indent: 8.0,
                 endIndent: 8.0,
               ),
@@ -190,26 +181,27 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               icon: Icons.live_help_rounded,
             ),
-            currentUser == null ?
             SideMenuItem(
               priority: 4,
+              title: 'Profile',
+              onTap: () {
+                page.jumpToPage(4);
+              },
+              icon: Icons.live_help_rounded,
+            ),
+            currentUser == null ?
+            SideMenuItem(
+              priority: 5,
               title: 'Sign In',
               onTap: () async {
-                page.jumpToPage(4);
+                page.jumpToPage(5);
               },
               icon: Icons.login,
             ): SideMenuItem(
-              priority: 4,
+              priority: 5,
               title: 'Sign Out',
               onTap: () async {
-                await FirebaseAuth.instance.signOut().then((value) {
-                  currentUser = null;
-                  setState(() {
-                    userModel = UserModel(uid: "null", admin: false);
-                    name = "";
-                  });
-                  page.jumpToPage(4);
-                });
+                await logOut();
               },
               icon: Icons.cancel,
             ),
@@ -224,6 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Messages(),
               Messages(),
               Help(userModel: userModel,),
+              Profile(userModel: userModel, refreshUI: refreshUI, logOut: logOut,),
               Auth(pageController: page, refreshUI: refreshUI,),
             ],
           ),
@@ -232,11 +225,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void refreshUI(User? user, String named) {
-    currentUser = user;
-    setState(() {
-      name = named;
+  Future<void> logOut() async {
+    await FirebaseAuth.instance.signOut().then((value) {
+      currentUser = null;
+      setState(() {
+        userModel = UserModel(uid: "null", admin: false, contact: "Not available");
+        name = "";
+      });
+      page.jumpToPage(5);
     });
+  }
+
+  void refreshUI(User? user) {
+    setState(() {
+      name = FirebaseAuth.instance.currentUser!.displayName!;
+      currentUser = user;
+    });
+
   }
 
 }
