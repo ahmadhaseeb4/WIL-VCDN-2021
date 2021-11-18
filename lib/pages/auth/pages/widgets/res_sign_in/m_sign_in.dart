@@ -110,7 +110,6 @@ class _MobileSignInState extends State<MobileSignIn> {
                             ),
                           ),
                           onSubmitted: (_) {
-                            _toggleSignInButton();
                           },
                           textInputAction: TextInputAction.go,
                         ),
@@ -153,7 +152,7 @@ class _MobileSignInState extends State<MobileSignIn> {
                       context.showErrorBar(content: Text(result.message));
                       return;
                     } else if (result.message == "Signed In") {
-                      widget.refreshUI(result.user, result.user!.displayName);
+                      widget.refreshUI(result.user);
                       widget.pageController.jumpToPage(0);
                     }
                   },
@@ -190,10 +189,6 @@ class _MobileSignInState extends State<MobileSignIn> {
     setState(() {
       loader = true;
     });
-  }
-
-  void _toggleSignInButton() {
-    CustomSnackBar(context, const Text('Login button pressed'));
   }
 
   void _toggleLogin() {

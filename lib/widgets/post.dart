@@ -285,21 +285,18 @@ class _PostState extends State<Post> {
       child: InkWell(
         child: Container(
           padding: EdgeInsets.symmetric(vertical: height * 0.015),
-          child: FittedBox(
-            fit: BoxFit.cover,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.comment,
-                  color: AppColor.bgSideMenu,
-                ),
-                Text(
-                  " Comment",
-                  style: TextStyle(color: AppColor.bgSideMenu),
-                ),
-              ],
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.comment,
+                color: AppColor.bgSideMenu,
+              ),
+              Text(
+                " Comment",
+                style: TextStyle(color: AppColor.bgSideMenu),
+              ),
+            ],
           ),
         ),
         onTap: () async {

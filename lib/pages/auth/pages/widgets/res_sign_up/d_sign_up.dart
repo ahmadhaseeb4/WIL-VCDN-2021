@@ -21,6 +21,7 @@ class _DesktopSignUpState extends State<DesktopSignUp> {
   final FocusNode focusNodeEmail = FocusNode();
   final FocusNode focusNodeName = FocusNode();
   final FocusNode focusNodeContact = FocusNode();
+  final FocusNode focusNodeCode = FocusNode();
 
   bool _obscureTextPassword = true;
   bool _obscureTextConfirmPassword = true;
@@ -30,6 +31,7 @@ class _DesktopSignUpState extends State<DesktopSignUp> {
   TextEditingController signupPasswordController = TextEditingController();
   TextEditingController signupConfirmPasswordController = TextEditingController();
   TextEditingController signupContactController = TextEditingController();
+  TextEditingController signupCodeController = TextEditingController();
 
   bool loader = false;
 
@@ -40,6 +42,7 @@ class _DesktopSignUpState extends State<DesktopSignUp> {
     focusNodeEmail.dispose();
     focusNodeName.dispose();
     focusNodeContact.dispose();
+    focusNodeCode.dispose();
     super.dispose();
   }
 
@@ -273,13 +276,50 @@ class _DesktopSignUpState extends State<DesktopSignUp> {
                               ],
                             ),
                           ),
+                          Expanded(
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                                    child: TextField(
+                                      keyboardType: TextInputType.number,
+                                      focusNode: focusNodeCode,
+                                      controller: signupCodeController,
+                                      style: TextStyle(color: AppColor.bgSideMenu),
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        icon: Icon(
+                                          FontAwesomeIcons.phoneAlt,
+                                          size: 22.0,
+                                          color: AppColor.bgSideMenu,
+                                        ),
+                                        hintText: 'Therapist Code*',
+                                        hintStyle: TextStyle(color: AppColor.bgSideMenu),
+                                      ),
+                                      onSubmitted: (_) {
+                                        //_toggleSignUpButton();
+                                      },
+                                      textInputAction: TextInputAction.go,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 250.0,
+                                    height: 2.0,
+                                    color: AppColor.yellow,
+                                  ),
+                                ],
+                              ),
+                          )
                         ],
                       ),
+                      SizedBox(height: 15,),
+                      Text("*If you don't have a Therapist Code, you may skip it")
                     ],
                   ),
                 ),
               ),
-              Container(
+              loader ? Container(): Container(
                 margin: const EdgeInsets.only(top: 370.0),
                 decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all( Radius.circular(5.0)),
@@ -322,15 +362,20 @@ class _DesktopSignUpState extends State<DesktopSignUp> {
                       context.showErrorBar(content: const Text("Contact number can not be empty."));
                       return;
                     }
+
                     StartLoader();
-                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text, signupContactController.text);
+                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text, signupContactController.text, signupCodeController.text);
                     StopLoader();
-                    if (result.message != "Signed Up"){
+                    if (result.message == "Signed Up" || result.message == "Signed Up! Admin") {
+                      widget.refreshUI(result.user);
+                      widget.pageController.jumpToPage(0);
+                    }
+                     else if (result.message == "The code you entered is invalid"){
                       context.showErrorBar(content: Text(result.message));
                       return;
-                    } else if (result.message == "Signed Up") {
-                      widget.refreshUI(result.user, signupNameController.text);
-                      widget.pageController.jumpToPage(0);
+                    } else if (result.message != "Signed Up"){
+                      context.showErrorBar(content: Text(result.message));
+                      return;
                     }
                   },
                 ),

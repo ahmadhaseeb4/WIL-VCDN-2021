@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pwot/models/userModel.dart';
+import 'package:pwot/pages/auth/pages/auth.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -349,14 +350,20 @@ class _DesktopProfileState extends State<DesktopProfile> {
                           if (signupPasswordController.text == signupConfirmPasswordController.text) {
                             StartLoader();
                             User user = FirebaseAuth.instance.currentUser!;
-                            user.updatePassword(signupPasswordController.text).then((_){
-                              context.showSuccessBar(content: Text("Password chaged! Please log in again."), duration: Duration(seconds: 2));
-                              Future.delayed(const Duration(seconds: 2), () async {
-                                await widget.logOut();
+                            await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(AuthServices.getAuthCredentials())
+                            .then((value) {
+                              user.updatePassword(signupPasswordController.text).then((_){
+                                StopLoader();
+                                context.showSuccessBar(content: const Text("Password changed! Please log in again."), duration: const Duration(seconds: 3));
+                                Future.delayed(const Duration(seconds: 3), () async {
+                                  await widget.logOut();
+                                });
+                              }).catchError((error){
+                                context.showErrorBar(content: const Text("An error occurred! Please log in again."), duration: const Duration(seconds: 3));
+                                Future.delayed(const Duration(seconds: 3), () async {
+                                  await widget.logOut();
+                                });
                               });
-                              StopLoader();
-                            }).catchError((error){
-                              print("Password can't be changed" + error.toString());
                             });
                           }
                         }

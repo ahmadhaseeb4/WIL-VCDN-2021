@@ -70,7 +70,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter article title here...',
+                        hintText: 'Enter video title here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {
@@ -120,7 +120,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter article description here...',
+                        hintText: 'Enter video description here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {
@@ -170,7 +170,7 @@ class _AddVideoState extends State<AddVideo> {
                           color: AppColor.bgSideMenu,
                           size: 22.0,
                         ),
-                        hintText: 'Enter article URL here...',
+                        hintText: 'Enter video URL here...',
                         hintStyle: TextStyle(color: AppColor.bgSideMenu),
                       ),
                       onSubmitted: (_) {

@@ -20,6 +20,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
   final FocusNode focusNodeEmail = FocusNode();
   final FocusNode focusNodeName = FocusNode();
   final FocusNode focusNodeContact = FocusNode();
+  final FocusNode focusNodeCode = FocusNode();
 
   bool _obscureTextPassword = true;
   bool _obscureTextConfirmPassword = true;
@@ -29,6 +30,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
   TextEditingController signupPasswordController = TextEditingController();
   TextEditingController signupConfirmPasswordController = TextEditingController();
   TextEditingController signupContactController = TextEditingController();
+  TextEditingController signupCodeController = TextEditingController();
 
   bool loader = false;
 
@@ -38,6 +40,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
     focusNodeConfirmPassword.dispose();
     focusNodeEmail.dispose();
     focusNodeName.dispose();
+    focusNodeCode.dispose();
     super.dispose();
   }
 
@@ -58,12 +61,12 @@ class _MobileSignUpState extends State<MobileSignUp> {
                 ),
                 child: Container(
                   width: 300.0,
-                  height: 400.0,
+                  height: 450.0,
                   child: loader ? Center(child: CircularProgressIndicator(color: AppColor.yellow,)) : Column(
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: TextField(
                           focusNode: focusNodeName,
                           controller: signupNameController,
@@ -91,7 +94,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: TextField(
                           focusNode: focusNodeEmail,
                           controller: signupEmailController,
@@ -119,7 +122,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: TextField(
                           focusNode: focusNodePassword,
                           controller: signupPasswordController,
@@ -158,7 +161,7 @@ class _MobileSignUpState extends State<MobileSignUp> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: TextField(
                           focusNode: focusNodeConfirmPassword,
                           controller: signupConfirmPasswordController,
@@ -190,12 +193,69 @@ class _MobileSignUpState extends State<MobileSignUp> {
                           textInputAction: TextInputAction.go,
                         ),
                       ),
+                      Container(
+                        width: 250.0,
+                        height: 2.0,
+                        color: AppColor.yellow,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: TextField(
+                          focusNode: focusNodeContact,
+                          controller: signupContactController,
+                          style: TextStyle(color: AppColor.bgSideMenu),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            icon: Icon(
+                              FontAwesomeIcons.phoneAlt,
+                              size: 22.0,
+                              color: AppColor.bgSideMenu,
+                            ),
+                            hintText: 'Contact Number',
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
+                          ),
+                          onSubmitted: (_) {
+                            //_toggleSignUpButton();
+                          },
+                          textInputAction: TextInputAction.go,
+                        ),
+                      ),
+                      Container(
+                        width: 250.0,
+                        height: 2.0,
+                        color: AppColor.yellow,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          focusNode: focusNodeCode,
+                          controller: signupCodeController,
+                          style: TextStyle(color: AppColor.bgSideMenu),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            icon: Icon(
+                              FontAwesomeIcons.phoneAlt,
+                              size: 22.0,
+                              color: AppColor.bgSideMenu,
+                            ),
+                            hintText: 'Therapist Code*',
+                            hintStyle: TextStyle(color: AppColor.bgSideMenu),
+                          ),
+                          onSubmitted: (_) {
+                            //_toggleSignUpButton();
+                          },
+                          textInputAction: TextInputAction.go,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 370.0),
+              loader ? Container(): Container(
+                margin: const EdgeInsets.only(top: 420.0),
                 decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all( Radius.circular(5.0)),
                     color: AppColor.bgSideMenu
@@ -238,14 +298,18 @@ class _MobileSignUpState extends State<MobileSignUp> {
                       return;
                     }
                     StartLoader();
-                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text, signupContactController.text);
+                    AuthData result = await AuthServices.SignUp(signupEmailController.text, signupPasswordController.text, signupNameController.text, signupContactController.text, signupCodeController.text);
                     StopLoader();
-                    if (result.message != "Signed Up"){
-                      context.showErrorBar(content: Text(result.message));
-                      return;
-                    } else if (result.message == "Signed Up") {
-                      widget.refreshUI(result.user, signupNameController.text);
+                    if (result.message == "Signed Up" || result.message == "Signed Up! Admin") {
+                      widget.refreshUI(result.user);
                       widget.pageController.jumpToPage(0);
+                    }
+                    else if (result.message == "The code you entered is invalid"){
+                      context.showErrorBar(content: Text(result.message + "HI"));
+                      return;
+                    } else if (result.message != "Signed Up"){
+                      context.showErrorBar(content: Text(result.message + "BI"));
+                      return;
                     }
                   },
                 ),

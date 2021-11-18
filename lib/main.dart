@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pwot/pages/auth/pages/auth.dart';
-import 'package:pwot/pages/feed.dart';
+import 'package:pwot/pages/feed/feed.dart';
 import 'package:pwot/pages/help/help.dart';
-import 'package:pwot/pages/messages/messages.dart';
-import 'package:pwot/profile/profile.dart';
+import 'package:pwot/pages/contact_us/contact_us.dart';
+import 'package:pwot/pages/profile/profile.dart';
 import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 
@@ -55,7 +55,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  UserModel userModel = UserModel(uid: "null", admin: false, contact: "Not Available");
+  UserModel userModel = UserModel(uid: "null", admin: false, contact: "Not Available", pic: '', name: '');
   PageController page = PageController();
   List<PostModel> posts = [];
   bool loader = false;
@@ -134,9 +134,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: height,
-                    maxWidth: width * 0.01,
+                    maxWidth: width * 0.2,
                   ),
-                  child: Icon(Icons.image)
+                  child: Image.network
+                    ("https://firebasestorage.googleapis.com/v0/b/wilvcdn2021.appspot.com/o/Playwright(1).png?alt=media&token=43fee245-0d60-4d79-936f-e75a78f0365b"),
               ),
               const Divider(
                 indent: 8.0,
@@ -167,38 +168,31 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SideMenuItem(
               priority: 2,
-              title: 'Messages',
-              onTap: () {
-                page.jumpToPage(2);
-              },
-              icon: Icons.message
-            ),
-            SideMenuItem(
-              priority: 3,
               title: 'Help Centre',
               onTap: () {
-                  page.jumpToPage(3);
+                  page.jumpToPage(2);
               },
               icon: Icons.live_help_rounded,
             ),
+            if (FirebaseAuth.instance.currentUser != null)
             SideMenuItem(
-              priority: 4,
+              priority: 3,
               title: 'Profile',
               onTap: () {
-                page.jumpToPage(4);
+                page.jumpToPage(3);
               },
-              icon: Icons.live_help_rounded,
+              icon: Icons.supervisor_account_outlined,
             ),
             currentUser == null ?
             SideMenuItem(
-              priority: 5,
+              priority: 4,
               title: 'Sign In',
               onTap: () async {
-                page.jumpToPage(5);
+                page.jumpToPage(4);
               },
               icon: Icons.login,
             ): SideMenuItem(
-              priority: 5,
+              priority: 4,
               title: 'Sign Out',
               onTap: () async {
                 await logOut();
@@ -213,8 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
             controller: page,
             children: [
               Feed(data: posts,),
-              Messages(),
-              Messages(),
+              ContactUs(),
               Help(userModel: userModel,),
               Profile(userModel: userModel, refreshUI: refreshUI, logOut: logOut,),
               Auth(pageController: page, refreshUI: refreshUI,),
@@ -229,10 +222,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await FirebaseAuth.instance.signOut().then((value) {
       currentUser = null;
       setState(() {
-        userModel = UserModel(uid: "null", admin: false, contact: "Not available");
+        userModel = UserModel(uid: "null", admin: false, contact: "Not available", pic: '', name: '');
         name = "";
       });
-      page.jumpToPage(5);
+      page.jumpToPage(4);
     });
   }
 

@@ -279,6 +279,7 @@ class _MobileProfileState extends State<MobileProfile> {
                           StartLoader();
                           setState(() {
                             FirebaseAuth.instance.currentUser!.updateDisplayName(signupNameController.text);
+                            widget.refreshUI(FirebaseAuth.instance.currentUser!);
                           });
                           StopLoader();
                         }

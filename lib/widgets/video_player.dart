@@ -30,7 +30,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     return Container(
-      height: 450,
+      height: 500,
       width: double.infinity,
       child: Column(
         children: [
@@ -53,7 +53,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                 Expanded(
                     child: Container(
                       height: double.infinity,
-                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                           borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                           color: Colors.red.shade900

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pwot/models/userModel.dart';
-import 'package:pwot/profile/widgets/d_profile.dart';
-import 'package:pwot/profile/widgets/m_profile.dart';
+import 'package:pwot/pages/profile/widgets/d_profile.dart';
+import 'package:pwot/pages/profile/widgets/m_profile.dart';
 
 
 
