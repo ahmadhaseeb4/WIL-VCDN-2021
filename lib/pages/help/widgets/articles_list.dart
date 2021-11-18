@@ -1,9 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:html' as HTML;
 
 import 'package:pwot/models/articleModel.dart';
+import 'package:pwot/models/userModel.dart';
 import 'package:pwot/services/article_services.dart';
+import 'package:pwot/services/auth_services.dart';
 import 'package:pwot/utility/app_colors.dart';
 
 
@@ -18,14 +21,31 @@ class ArticlesList extends StatefulWidget {
 class _ArticlesListState extends State<ArticlesList> {
   List<ArticleModel> extractedArticles = [];
   final ScrollController _scrollController1 = ScrollController();
-  bool articleLoader = false;
+  bool loader = false;
+  UserModel? user;
+
+  @override
+  void initState() {
+    super.initState();
+    if (FirebaseAuth.instance.currentUser != null) {
+      setState(() {
+        loader = true;
+      });
+      AuthServices.getUserModel(FirebaseAuth.instance.currentUser!.uid).then((value) {
+        user = value;
+        setState(() {
+          loader = false;
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Expanded(
-          child: articleLoader
+          child: loader
               ? Center(child: CircularProgressIndicator(color: AppColor.yellow,),)
               : ListView.builder(
             controller: _scrollController1,
@@ -53,6 +73,7 @@ class _ArticlesListState extends State<ArticlesList> {
                                     ),
                                     flex: 10,
                                   ),
+                                  if (user != null && user!.admin)
                                   Expanded(
                                     child: InkWell(
                                       child: Icon(
@@ -61,7 +82,7 @@ class _ArticlesListState extends State<ArticlesList> {
                                       ),
                                       onTap: () async {
                                         setState(() {
-                                          articleLoader = true;
+                                          loader = true;
                                         });
                                         List<ArticleModel> data = await ArticleServices.deleteArticle(widget.extractedArticles[i].id);
                                         widget.extractedArticles.clear();
@@ -69,7 +90,7 @@ class _ArticlesListState extends State<ArticlesList> {
                                           widget.extractedArticles.add(element);
                                         });
                                         setState(() {
-                                          articleLoader = false;
+                                          loader = false;
                                         });
                                       },
                                     ),
